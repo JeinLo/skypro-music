@@ -167,7 +167,15 @@
   overflow-y: auto;
 }
 
-
+.playlistTitle__col {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 2px;
+  color: #696969;
+  text-transform: uppercase;
+}
 
 .playlistTitle__svg {
   width: 12px;
@@ -176,7 +184,9 @@
   stroke: #696969;
 }
 
-
+.col01 {
+  width: 447px;
+}
 
 .col02 {
   width: 321px;

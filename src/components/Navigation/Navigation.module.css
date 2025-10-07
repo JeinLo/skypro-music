@@ -34,8 +34,8 @@
 }
 
 .logo__image {
-  width: 113.33px;
-  height: 17px;
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 

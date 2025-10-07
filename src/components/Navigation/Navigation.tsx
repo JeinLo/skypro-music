@@ -8,12 +8,11 @@ export default function Navigation() {
             <div className={styles.nav__logo}>
               {/*TODO: img –> Image*/}
               <Image
-                  className={styles.logo__image}
-                  src="/img/logo.png"
-                  alt="logo"
-                  width={113.33}
-                  height={17}
-                  />
+               className={styles.logo__image}
+               src="/img/logo.png"
+               alt="logo"
+               height={17}
+               />
             </div>
             <div className={styles.nav__burger}>
               <span className={styles.burger__line}></span>
