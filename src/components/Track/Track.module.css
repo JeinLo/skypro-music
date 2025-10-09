@@ -20,6 +20,10 @@
   align-items: center;
 }
 
+.activeTrack {
+  color: #ad61ff;
+}
+
 .track__title {
   display: -webkit-box;
   display: -ms-flexbox;
