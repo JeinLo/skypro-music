@@ -12,6 +12,7 @@ export default function Navigation() {
                src="/img/logo.png"
                alt="logo"
                height={17}
+               width ={113.33}
                />
             </div>
             <div className={styles.nav__burger}>
