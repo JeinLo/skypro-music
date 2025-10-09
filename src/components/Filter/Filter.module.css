@@ -1,22 +1,3 @@
-.centerblock {
-  width: auto;
-  -webkit-box-flex: 3;
-  -ms-flex-positive: 3;
-  flex-grow: 3;
-  padding: 20px 40px 20px 111px;
-}
-
-
-.centerblock__h2 {
-  font-style: normal;
-  font-weight: 400;
-  font-size: 64px;
-  line-height: 72px;
-  letter-spacing: -0.8px;
-  margin-bottom: 45px;
-  color: white;
-}
-
 .centerblock__filter {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -31,16 +12,6 @@
   margin-bottom: 51px;
 }
 
-.centerblock__content {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
-  flex-direction: column;
-}
-
 .filter__title {
   font-style: normal;
   font-weight: 400;
@@ -50,8 +21,11 @@
   color: white;
 }
 
+.filter__button_wrapper {
+  position: relative;
+}
+
 .filter__button {
-  /*composes: btn-text from '/src/UI/Button/button.module.css';*/
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -60,19 +34,49 @@
   border-radius: 60px;
   padding: 6px 20px;
   color: white;
+  cursor: pointer;
 }
 
 .filter__button:not(:last-child) {
   margin-right: 10px;
 }
 
-.content__playlist {
-  display: -webkit-box;
-  display: -ms-flexbox;
+.filter__button.active {
+  border-color: #ad61ff;
+  color: #ad61ff;
+}
+
+.filter__button:hover {
+  border-color: #d9b6ff;
+  color: #d9b6ff;
+  cursor: pointer;
+}
+
+.filter__list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 248px;
+  height: 305px;
+  background: #313131;
+  border-radius: 12px;
+  padding: 34px;
+  color: white;
   display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-  -ms-flex-direction: column;
+  gap: 10px;
   flex-direction: column;
   overflow-y: auto;
+  z-index: 10;
+}
+
+.filter__list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter__list::-webkit-scrollbar-track {
+  background-color: rgba(75, 73, 73, 1);
+}
+
+.filter__list::-webkit-scrollbar-thumb {
+  background-color: white;
 }
