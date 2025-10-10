@@ -26,9 +26,14 @@
   -webkit-box-pack: justify;
   -ms-flex-pack: justify;
   justify-content: space-between;
+  cursor: pointer;
 }
 
 .nav__menu {
+  display: none;
+}
+
+.nav__menu_open {
   display: block;
   visibility: visible;
 }
