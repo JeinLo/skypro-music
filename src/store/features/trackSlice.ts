@@ -37,6 +37,8 @@ const trackSlice = createSlice({
       if (curIndex < playlist.length - 1) {
         state.currentTrack = playlist[curIndex + 1];
         state.isPlay = true;
+      } else {
+        state.isPlay = false; // Останавливаем воспроизведение, если трек последний
       }
     },
     setPrevTrack: (state) => {
@@ -49,6 +51,9 @@ const trackSlice = createSlice({
     },
     toggleShuffle: (state) => {
       state.isShuffle = !state.isShuffle;
+      if (state.isShuffle) {
+        state.shufflePlaylist = [...state.playlist].sort(() => Math.random() - 0.5);
+      }
     },
   },
 });

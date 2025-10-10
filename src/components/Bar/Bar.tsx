@@ -12,6 +12,7 @@ import { getTimePanel } from '@/utils/helper';
 export default function Bar() {
   const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
   const isPlay = useAppSelector((state) => state.tracks.isPlay);
+  const isShuffle = useAppSelector((state) => state.tracks.isShuffle);
   const dispatch = useAppDispatch();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isLoop, setIsLoop] = useState(false);
@@ -159,7 +160,7 @@ export default function Bar() {
                 </svg>
               </div>
               <div
-                className={classNames(styles.player__btnShuffle, styles.btnIcon)}
+                className={classNames(styles.player__btnShuffle, styles.btnIcon, { [styles.active]: isShuffle })}
                 onClick={onToggleShuffle}
               >
                 <svg className={styles.player__btnShuffleSvg}>
