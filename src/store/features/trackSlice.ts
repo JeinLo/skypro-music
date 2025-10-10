@@ -17,10 +17,11 @@ const trackSlice = createSlice({
   reducers: {
     setCurrentTrack: (state, action: PayloadAction<TrackType>) => {
       state.currentTrack = action.payload;
+      state.isPlay = true;
     },
     setIsPlay: (state, action: PayloadAction<boolean>) => {
-      state.isPlay = action.payload
-    }
+      state.isPlay = action.payload;
+    },
   },
 });
 

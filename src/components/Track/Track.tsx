@@ -14,8 +14,7 @@ type TrackProps = {
 
 export default function Track({ track }: TrackProps) {
   const dispatch = useAppDispatch();
-  const isPlay = useAppSelector((state) => state.tracks.isPlay)
-
+  const isPlay = useAppSelector((state) => state.tracks.isPlay);
   const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
 
   const isCurrentTrack = currentTrack?._id === track._id;
@@ -28,13 +27,18 @@ export default function Track({ track }: TrackProps) {
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>
           <div className={styles.track__titleImage}>
-            <svg className={classNames(styles.track__titleSvg, {
-              [styles.active]: isPlay
-            })}>
+            <svg className={styles.track__titleSvg}>
               <use xlinkHref="/img/icon/sprite.svg#icon-note"></use>
             </svg>
+            {isCurrentTrack && (
+              <span
+                className={classNames(styles.currentTrackDot, {
+                  [styles.pulsating]: isPlay,
+                })}
+              />
+            )}
           </div>
-          <div className="track__titleText">
+          <div className={styles.track__titleText}>
             <Link
               className={classNames(styles.track__titleLink, {
                 [styles.activeTrack]: isCurrentTrack,
@@ -55,7 +59,7 @@ export default function Track({ track }: TrackProps) {
             {track.album}
           </Link>
         </div>
-        <div className="track__time">
+        <div className={styles.track__time}>
           <svg className={styles.track__timeSvg}>
             <use xlinkHref="/img/icon/sprite.svg#icon-like"></use>
           </svg>
