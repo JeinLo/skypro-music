@@ -6,7 +6,7 @@ import styles from './Track.module.css';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 import { formatTime } from '@/utils/helper';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setCurrentPlaylist, setCurrentTrack } from '@/store/features/trackSlice';
+import { setCurrentTrack } from '@/store/features/trackSlice';
 
 type TrackProps = {
   track: TrackType;
@@ -21,14 +21,13 @@ export default function Track({ track, playlist }: TrackProps) {
   const isCurrentTrack = currentTrack?._id === track._id;
 
   const onClickCurrentTrack = () => {
-    dispatch(setCurrentTrack(track));
-    dispatch(setCurrentPlaylist(playlist));
-  }
+    dispatch(setCurrentTrack({ track, playlist }));
+  };
 
   return (
     <div
       className={styles.playlist__item}
-      onClick={() => dispatch(setCurrentTrack(track))}
+      onClick={onClickCurrentTrack}
     >
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>

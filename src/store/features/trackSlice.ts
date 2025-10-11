@@ -21,15 +21,14 @@ const trackSlice = createSlice({
   name: 'tracks',
   initialState,
   reducers: {
-    setCurrentTrack: (state, action: PayloadAction<TrackType>) => {
-      state.currentTrack = action.payload;
+    setCurrentTrack: (state, action: PayloadAction<{ track: TrackType; playlist: TrackType[] }>) => {
+      state.currentTrack = action.payload.track;
+      state.playlist = action.payload.playlist;
+      state.shufflePlaylist = [...action.payload.playlist].sort(() => Math.random() - 0.5);
+      state.isPlay = true; // Включаем воспроизведение при выборе трека
     },
-    setCurrentPlaylist: (state, action: PayloadAction<TrackType[]>) => {
-      state.playlist = action.payload;
-      state.shufflePlaylist = [...action.payload].sort(() => Math.random() - 0.5);
-    },
-    setIsPlay: (state, action: PayloadAction<boolean>) => {
-      state.isPlay = action.payload;
+    setIsPlay: (state) => {
+      state.isPlay = !state.isPlay; // Упрощённое переключение play/pause
     },
     setNextTrack: (state) => {
       const playlist = state.isShuffle ? state.shufflePlaylist : state.playlist;
@@ -58,5 +57,5 @@ const trackSlice = createSlice({
   },
 });
 
-export const { setCurrentTrack, setIsPlay, setCurrentPlaylist, setNextTrack, setPrevTrack, toggleShuffle } = trackSlice.actions;
+export const { setCurrentTrack, setIsPlay, setNextTrack, setPrevTrack, toggleShuffle } = trackSlice.actions;
 export const trackSliceReducer = trackSlice.reducer;

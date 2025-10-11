@@ -58,7 +58,6 @@ export default function Bar() {
         setDuration(audio.duration);
         if (isPlay) {
           audio.play().catch((error) => console.error('Ошибка воспроизведения:', error));
-          dispatch(setIsPlay(true));
         }
       };
       const handleTimeUpdate = () => {
@@ -83,7 +82,7 @@ export default function Bar() {
   }, [dispatch, isLoop]);
 
   const togglePlay = () => {
-    dispatch(setIsPlay(!isPlay));
+    dispatch(setIsPlay());
   };
 
   const onToggleLoop = () => {
