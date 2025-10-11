@@ -19,3 +19,7 @@ a, input, button {
 a {
   text-decoration: none;
 }
+
+audio {
+  display: none;
+}

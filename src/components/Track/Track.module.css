@@ -20,6 +20,10 @@
   align-items: center;
 }
 
+.activeTrack {
+  color: #ad61ff;
+}
+
 .track__title {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -49,6 +53,7 @@
   -ms-flex-pack: center;
   justify-content: center;
   margin-right: 17px;
+  position: relative;
 }
 
 .track__titleSvg {
@@ -56,6 +61,35 @@
   height: 17px;
   fill: transparent;
   stroke: #4e4e4e;
+}
+
+.currentTrackDot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #b672ff;
+    border-radius: 50%;
+    top: 32%;
+    left: 32%;
+}
+
+.pulsating {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .track__titleLink {
