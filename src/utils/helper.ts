@@ -1,5 +1,4 @@
 import { TrackType } from "@/sharedTypes/sharedTypes";
-import { current } from "@reduxjs/toolkit";
 
 export function getUniqueValuesByKey(
   arr: TrackType[],
@@ -24,20 +23,14 @@ export function getUniqueValuesByKey(
   return Array.from(uniqueValues);
 }
 
-
 export function formatTime(time: number) {
   const minutes = Math.floor(time / 60);
- const inputSeconds = Math.floor(time % 60);
- const outputSeconds = inputSeconds < 10 ? `0${inputSeconds}` : inputSeconds;
+  const inputSeconds = Math.floor(time % 60);
+  const outputSeconds = inputSeconds < 10 ? `0${inputSeconds}` : inputSeconds;
 
- return `${minutes}:${outputSeconds}`;
+  return `${minutes}:${outputSeconds}`;
 }
 
- export const getTimePanel = (
-  currentTime: number,
-  totalTime: number | undefined,
- ) => {
-  if (totalTime) {
-    return `${formatTime(currentTime)} / ${formatTime(totalTime)}`;
-  }
- };
+export const getTimePanel = (currentTime: number, totalTime: number | undefined) => {
+  return `${formatTime(currentTime)} / ${totalTime ? formatTime(totalTime) : '--:--'}`;
+};

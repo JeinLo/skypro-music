@@ -21,24 +21,55 @@ export default function Bar() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Эффект для смены трека и loop
+  // Эффект для управления треком и воспроизведением
   useEffect(() => {
     if (audioRef.current && currentTrack) {
       audioRef.current.src = currentTrack.track_file;
       audioRef.current.volume = volume;
       audioRef.current.loop = isLoop;
       setIsLoadedTrack(false);
-      if (isPlay) {
-        audioRef.current.play().catch((error) => {
-          console.error('Ошибка воспроизведения:', error);
-        });
-      }
+      setCurrentTime(0);
+
+      const handleLoadedMetadata = () => {
+        console.log('Metadata loaded:', audioRef.current!.duration);
+        setIsLoadedTrack(true);
+        setDuration(audioRef.current!.duration || 0);
+        if (isPlay) {
+          audioRef.current!.play().catch((error) => {
+            console.error('Ошибка воспроизведения:', error);
+          });
+        }
+      };
+
+      const handleTimeUpdate = () => {
+        console.log('Time update:', audioRef.current!.currentTime);
+        setCurrentTime(audioRef.current!.currentTime);
+      };
+
+      const handleEnded = () => {
+        console.log('Track ended');
+        if (!isLoop) {
+          dispatch(setNextTrack());
+        }
+      };
+
+      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      audioRef.current.addEventListener('ended', handleEnded);
+
+      audioRef.current.load(); // Принудительно загружаем трек
+
+      return () => {
+        audioRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audioRef.current?.removeEventListener('timeupdate', handleTimeUpdate);
+        audioRef.current?.removeEventListener('ended', handleEnded);
+      };
     }
-  }, [currentTrack, isLoop]);
+  }, [currentTrack, isLoop, dispatch]);
 
   // Эффект для управления воспроизведением/паузой
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && isLoadedTrack) {
       if (isPlay) {
         audioRef.current.play().catch((error) => {
           console.error('Ошибка воспроизведения:', error);
@@ -47,39 +78,7 @@ export default function Bar() {
         audioRef.current.pause();
       }
     }
-  }, [isPlay]);
-
-  // Эффект для обработки времени и событий
-  useEffect(() => {
-    if (audioRef.current) {
-      const audio = audioRef.current;
-      const handleLoadedMetadata = () => {
-        setIsLoadedTrack(true);
-        setDuration(audio.duration);
-        if (isPlay) {
-          audio.play().catch((error) => console.error('Ошибка воспроизведения:', error));
-        }
-      };
-      const handleTimeUpdate = () => {
-        setCurrentTime(audio.currentTime);
-      };
-      const handleEnded = () => {
-        if (!isLoop) {
-          dispatch(setNextTrack());
-        }
-      };
-
-      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.addEventListener('timeupdate', handleTimeUpdate);
-      audio.addEventListener('ended', handleEnded);
-
-      return () => {
-        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('ended', handleEnded);
-      };
-    }
-  }, [dispatch, isLoop]);
+  }, [isPlay, isLoadedTrack]);
 
   const togglePlay = () => {
     dispatch(setIsPlay());
@@ -94,10 +93,12 @@ export default function Bar() {
   };
 
   const onNextTrack = () => {
+    console.log('Next track clicked');
     dispatch(setNextTrack());
   };
 
   const onPrevTrack = () => {
+    console.log('Prev track clicked');
     dispatch(setPrevTrack());
   };
 
