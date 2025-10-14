@@ -10,19 +10,24 @@ import { setCurrentTrack } from '@/store/features/trackSlice';
 
 type TrackProps = {
   track: TrackType;
+  playlist: TrackType[];
 };
 
-export default function Track({ track }: TrackProps) {
+export default function Track({ track, playlist }: TrackProps) {
   const dispatch = useAppDispatch();
   const isPlay = useAppSelector((state) => state.tracks.isPlay);
   const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
 
   const isCurrentTrack = currentTrack?._id === track._id;
 
+  const onClickCurrentTrack = () => {
+    dispatch(setCurrentTrack({ track, playlist }));
+  };
+
   return (
     <div
       className={styles.playlist__item}
-      onClick={() => dispatch(setCurrentTrack(track))}
+      onClick={onClickCurrentTrack}
     >
       <div className={styles.playlist__track}>
         <div className={styles.track__title}>

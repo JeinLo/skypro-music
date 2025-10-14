@@ -23,6 +23,7 @@
 
 .filter__button_wrapper {
   position: relative;
+  margin: 10px;
 }
 
 .filter__button {

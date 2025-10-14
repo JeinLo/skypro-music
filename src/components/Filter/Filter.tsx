@@ -60,7 +60,7 @@ export default function Filter() {
       <div className={styles.filter__button_wrapper}>
         <div
           className={classNames(styles.filter__button, {
-            [styles.active]: activeFilter === 'year',
+            [styles.active]: activeFilter === 'genre',
           })}
           onClick={() => toggleFilter('genre')}
         >
