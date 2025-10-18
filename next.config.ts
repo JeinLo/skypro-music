@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  outputFileTracingRoot: process.cwd(),
-};
-
-export default nextConfig;
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/music/main',
+        permanent: true,
+      },
+    ]
+  },
+}
