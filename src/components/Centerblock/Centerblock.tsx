@@ -13,9 +13,10 @@ type CenterblockProps = {
 };
 
 export default function Centerblock({ tracks }: CenterblockProps) {
-  const isShuffle = useAppSelector((state) => state.tracks.isShuffle);
-  const playlist = useAppSelector((state) => state.tracks.playlist);
-  const shufflePlaylist = useAppSelector((state) => state.tracks.shufflePlaylist);
+  const tracksState = useAppSelector((state) => state.tracks);
+  const isShuffle = tracksState?.isShuffle ?? false;
+  const playlist = tracksState?.playlist ?? [];
+  const shufflePlaylist = tracksState?.shufflePlaylist ?? [];
   const displayPlaylist = isShuffle ? shufflePlaylist : (playlist.length > 0 ? playlist : tracks);
 
   return (

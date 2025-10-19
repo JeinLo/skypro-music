@@ -6,9 +6,8 @@ import styles from './Track.module.css';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 import { formatTime } from '@/utils/helper';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setCurrentTrack } from '@/store/features/trackSlice';
-import { addFavoriteTrack, removeFavoriteTrack } from '@/services/tracks/tracksApi';
-import { useState } from 'react';
+import { setCurrentTrack, toggleFavorite } from '@/store/features/trackSlice';
+import { useState, useEffect } from 'react';
 
 type TrackProps = {
   track: TrackType;
@@ -19,10 +18,27 @@ export default function Track({ track, playlist }: TrackProps) {
   const dispatch = useAppDispatch();
   const isPlay = useAppSelector((state) => state.tracks.isPlay);
   const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
-  const userId = localStorage.getItem('userId'); // Предполагаем, что _id пользователя сохранён
-  const [isFavorite, setIsFavorite] = useState(
-    !!track.starred_user?.includes(Number(userId)),
-  );
+  const favoriteTrackIds = useAppSelector((state) => state.tracks.favoriteTrackIds);
+  const [isFavorite, setIsFavorite] = useState(favoriteTrackIds.includes(track._id));
+
+  useEffect(() => {
+    // Синхронизация favoriteTrackIds с localStorage
+    const savedFavorites = localStorage.getItem('favoriteTrackIds');
+    if (savedFavorites) {
+      const favoriteIds = JSON.parse(savedFavorites) as number[];
+      favoriteIds.forEach((id) => {
+        if (!favoriteTrackIds.includes(id)) {
+          dispatch(toggleFavorite(id));
+        }
+      });
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    // Сохранение favoriteTrackIds в localStorage
+    localStorage.setItem('favoriteTrackIds', JSON.stringify(favoriteTrackIds));
+    setIsFavorite(favoriteTrackIds.includes(track._id));
+  }, [favoriteTrackIds, track._id]);
 
   const isCurrentTrack = currentTrack?._id === track._id;
 
@@ -30,18 +46,8 @@ export default function Track({ track, playlist }: TrackProps) {
     dispatch(setCurrentTrack({ track, playlist }));
   };
 
-  const toggleFavorite = async () => {
-    try {
-      if (isFavorite) {
-        await removeFavoriteTrack(track._id);
-        setIsFavorite(false);
-      } else {
-        await addFavoriteTrack(track._id);
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'Ошибка при изменении избранного');
-    }
+  const toggleFavoriteTrack = () => {
+    dispatch(toggleFavorite(track._id));
   };
 
   return (
@@ -85,8 +91,8 @@ export default function Track({ track, playlist }: TrackProps) {
           <svg
             className={classNames(styles.track__timeSvg, { [styles.active]: isFavorite })}
             onClick={(e) => {
-              e.stopPropagation(); // Предотвращаем запуск трека при клике на лайк
-              toggleFavorite();
+              e.stopPropagation();
+              toggleFavoriteTrack();
             }}
           >
             <use xlinkHref={`/img/icon/sprite.svg#icon-${isFavorite ? 'like-filled' : 'like'}`} />

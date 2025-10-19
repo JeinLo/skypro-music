@@ -10,9 +10,10 @@ import ProgressBar from '../ProgressBar/ProgressBar';
 import { getTimePanel } from '@/utils/helper';
 
 export default function Bar() {
-  const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
-  const isPlay = useAppSelector((state) => state.tracks.isPlay);
-  const isShuffle = useAppSelector((state) => state.tracks.isShuffle);
+  const tracksState = useAppSelector((state) => state.tracks);
+  const currentTrack = tracksState?.currentTrack;
+  const isPlay = tracksState?.isPlay ?? false;
+  const isShuffle = tracksState?.isShuffle ?? false;
   const dispatch = useAppDispatch();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isLoop, setIsLoop] = useState(false);
@@ -81,7 +82,7 @@ export default function Bar() {
   }, [isPlay, isLoadedTrack]);
 
   const togglePlay = () => {
-    dispatch(setIsPlay());
+    dispatch(setIsPlay(!isPlay));
   };
 
   const onToggleLoop = () => {
@@ -111,7 +112,7 @@ export default function Bar() {
   };
 
   const handleNotImplemented = () => {
-    alert('Еще не реализовано');
+    alert('Ещё не реализовано');
   };
 
   if (!currentTrack) return null;
@@ -124,7 +125,7 @@ export default function Bar() {
         <ProgressBar
           max={duration}
           step={0.1}
-          readOnly={!isLoadedTrack}
+          disabled={!isLoadedTrack} // Заменяем readOnly на disabled
           value={currentTime}
           onChange={onChangeProgress}
         />

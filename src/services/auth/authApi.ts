@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { BASE_URL } from '../constants';
 
 export type AuthUserProps = {
@@ -34,7 +34,7 @@ export const authUser = async (data: AuthUserProps): Promise<AuthUserReturn> => 
     localStorage.setItem('userId', String(userData._id));
     return userData;
   } catch (error: unknown) {
-    if (error instanceof AxiosError && error.response) {
+    if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response;
       if (status === 400 || status === 401) {
         throw new Error(data.message || 'Ошибка авторизации');
@@ -59,7 +59,7 @@ export const signupUser = async (
     localStorage.setItem('userId', String(result._id));
     return result;
   } catch (error: unknown) {
-    if (error instanceof AxiosError && error.response) {
+    if (axios.isAxiosError(error) && error.response) {
       const { status, data } = error.response;
       if (status === 403) {
         throw new Error(data.message || 'Введенный Email уже занят');

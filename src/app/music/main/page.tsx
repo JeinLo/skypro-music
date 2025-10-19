@@ -5,23 +5,13 @@ import Bar from '@/components/Bar/Bar';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Centerblock from '@/components/Centerblock/Centerblock';
 import Navigation from '@/components/Navigation/Navigation';
-import { getTracks, getFavoriteTracks } from '@/services/tracks/tracksApi';
+import { getTracks } from '@/services/tracks/tracksApi';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 
 export default async function Home() {
   let tracks: TrackType[] = [];
   try {
     tracks = await getTracks();
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      const favoriteTracks = await getFavoriteTracks();
-      tracks = tracks.map((track) => ({
-        ...track,
-        starred_user: favoriteTracks.some((fav) => fav._id === track._id)
-          ? [Number(userId)]
-          : [],
-      }));
-    }
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : 'Неизвестная ошибка');
   }

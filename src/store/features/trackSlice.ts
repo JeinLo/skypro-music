@@ -1,61 +1,115 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 
-type initialStateType = {
-  currentTrack: TrackType | null;
-  isPlay: boolean;
+export interface TrackState {
   playlist: TrackType[];
   shufflePlaylist: TrackType[];
+  currentTrack: TrackType | null;
+  isPlay: boolean;
   isShuffle: boolean;
-};
+  favoriteTrackIds: number[];
+}
 
-const initialState: initialStateType = {
+const initialState: TrackState = {
+  playlist: [],
+  shufflePlaylist: [],
   currentTrack: null,
   isPlay: false,
   isShuffle: false,
-  shufflePlaylist: [],
-  playlist: [],
+  favoriteTrackIds: [],
 };
 
-const trackSlice = createSlice({
+// Функция для создания перемешанного плейлиста
+const shuffleArray = <T>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+export const trackSlice = createSlice({
   name: 'tracks',
   initialState,
   reducers: {
-    setCurrentTrack: (state, action: PayloadAction<{ track: TrackType; playlist: TrackType[] }>) => {
+    setPlaylist: (state, action: PayloadAction<TrackType[]>) => {
+      state.playlist = action.payload;
+    },
+    setShufflePlaylist: (state, action: PayloadAction<TrackType[]>) => {
+      state.shufflePlaylist = action.payload;
+    },
+    setCurrentTrack: (
+      state,
+      action: PayloadAction<{ track: TrackType; playlist: TrackType[] }>,
+    ) => {
       state.currentTrack = action.payload.track;
       state.playlist = action.payload.playlist;
-      state.shufflePlaylist = [...action.payload.playlist].sort(() => Math.random() - 0.5);
-      state.isPlay = true; // Включаем воспроизведение при выборе трека
     },
-    setIsPlay: (state) => {
-      state.isPlay = !state.isPlay; // Упрощённое переключение play/pause
+    setIsPlay: (state, action: PayloadAction<boolean>) => {
+      state.isPlay = action.payload;
+    },
+    setIsShuffle: (state, action: PayloadAction<boolean>) => {
+      state.isShuffle = action.payload;
+      if (action.payload && state.playlist.length > 0) {
+        state.shufflePlaylist = shuffleArray(state.playlist);
+      } else {
+        state.shufflePlaylist = [];
+      }
+    },
+    toggleFavorite: (state, action: PayloadAction<number>) => {
+      const trackId = action.payload;
+      if (state.favoriteTrackIds.includes(trackId)) {
+        state.favoriteTrackIds = state.favoriteTrackIds.filter((id) => id !== trackId);
+      } else {
+        state.favoriteTrackIds.push(trackId);
+      }
     },
     setNextTrack: (state) => {
-      const playlist = state.isShuffle ? state.shufflePlaylist : state.playlist;
-      const curIndex = playlist.findIndex((el) => el._id === state.currentTrack?._id);
-      if (curIndex < playlist.length - 1) {
-        state.currentTrack = playlist[curIndex + 1];
+      if (!state.currentTrack || state.playlist.length === 0) return;
+      const activePlaylist = state.isShuffle ? state.shufflePlaylist : state.playlist;
+      const currentIndex = activePlaylist.findIndex(
+        (track) => track._id === state.currentTrack?._id,
+      );
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < activePlaylist.length) {
+        state.currentTrack = activePlaylist[nextIndex];
         state.isPlay = true;
-      } else {
-        state.isPlay = false; // Останавливаем воспроизведение, если трек последний
       }
     },
     setPrevTrack: (state) => {
-      const playlist = state.isShuffle ? state.shufflePlaylist : state.playlist;
-      const curIndex = playlist.findIndex((el) => el._id === state.currentTrack?._id);
-      if (curIndex > 0) {
-        state.currentTrack = playlist[curIndex - 1];
+      if (!state.currentTrack || state.playlist.length === 0) return;
+      const activePlaylist = state.isShuffle ? state.shufflePlaylist : state.playlist;
+      const currentIndex = activePlaylist.findIndex(
+        (track) => track._id === state.currentTrack?._id,
+      );
+      const prevIndex = currentIndex - 1;
+      if (prevIndex >= 0) {
+        state.currentTrack = activePlaylist[prevIndex];
         state.isPlay = true;
       }
     },
     toggleShuffle: (state) => {
       state.isShuffle = !state.isShuffle;
-      if (state.isShuffle) {
-        state.shufflePlaylist = [...state.playlist].sort(() => Math.random() - 0.5);
+      if (state.isShuffle && state.playlist.length > 0) {
+        state.shufflePlaylist = shuffleArray(state.playlist);
+      } else {
+        state.shufflePlaylist = [];
       }
     },
   },
 });
 
-export const { setCurrentTrack, setIsPlay, setNextTrack, setPrevTrack, toggleShuffle } = trackSlice.actions;
-export const trackSliceReducer = trackSlice.reducer;
+export const {
+  setPlaylist,
+  setShufflePlaylist,
+  setCurrentTrack,
+  setIsPlay,
+  setIsShuffle,
+  toggleFavorite,
+  setNextTrack,
+  setPrevTrack,
+  toggleShuffle,
+} = trackSlice.actions;
+
+export default trackSlice.reducer;
