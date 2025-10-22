@@ -1,6 +1,28 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 
+// type InitialStateType = {
+//   currentTrack: TrackType | null;
+//   isPlay: boolean;
+//   currentPlaylist: TrackType[];
+//   shuffledPlaylist: TrackType[];
+//   isShuffle: boolean;
+//   allTracks: TrackType[];
+//   fetchError: null | string;
+//   fetchIsLoading: boolean;
+// };
+
+// const initialState: InitialStateType = {
+//   currentTrack: null,
+//   isPlay: false,
+//   currentPlaylist: [],
+//   shuffledPlaylist: [],
+//   isShuffle: false,
+//   allTracks: [],
+//   fetchError: null,
+//   fetchIsLoading: true,
+// };
+
 export interface TrackState {
   playlist: TrackType[];
   shufflePlaylist: TrackType[];
