@@ -8,5 +8,6 @@ export interface TrackType {
   album: string;
   logo: null | string;
   track_file: string;
-  starred_user: number[]; // Изменено на starred_user и тип number[] для ID пользователей
+  starred_user: number[];
+  isLiked?: boolean; 
 }

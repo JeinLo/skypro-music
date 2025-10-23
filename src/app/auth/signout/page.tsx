@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logoutUser } from '@/services/auth/authApi';
 import { useAppDispatch } from '@/store/store';
-import { logout } from '@/store/features/authSlice';
+import { clearAuth } from '@/store/features/authSlice';
 import { clearAllTracks } from '@/store/features/trackSlice';
 
 export default function SignOut() {
@@ -13,7 +13,7 @@ export default function SignOut() {
 
   useEffect(() => {
     logoutUser();
-    dispatch(logout());
+    dispatch(clearAuth());
     dispatch(clearAllTracks());
     router.push('/auth/signin');
   }, [dispatch, router]);

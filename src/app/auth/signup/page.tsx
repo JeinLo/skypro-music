@@ -67,6 +67,8 @@ export default function SignUp() {
         className={classNames(styles.modal__input, styles.login)}
         type="text"
         name="email"
+        id="email"
+        autoComplete="email"
         placeholder="Почта"
         value={email}
         onChange={onChangeEmail}
@@ -75,6 +77,8 @@ export default function SignUp() {
         className={styles.modal__input}
         type="text"
         name="username"
+        id="username"
+        autoComplete="username"
         placeholder="Имя пользователя"
         value={username}
         onChange={onChangeUsername}
@@ -83,6 +87,8 @@ export default function SignUp() {
         className={styles.modal__input}
         type="password"
         name="password"
+        id="password"
+        autoComplete="off"
         placeholder="Пароль"
         value={password}
         onChange={onChangePassword}
@@ -91,6 +97,8 @@ export default function SignUp() {
         className={styles.modal__input}
         type="password"
         name="confirmPassword"
+        id="confirmPassword"
+        autoComplete="off"
         placeholder="Повторите пароль"
         value={confirmPassword}
         onChange={onChangeConfirmPassword}

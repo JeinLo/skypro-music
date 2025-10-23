@@ -7,10 +7,10 @@ export const getTracks = async (): Promise<TrackType[]> => {
     throw new Error('Ошибка при получении треков');
   }
   const data = await res.json();
-  return data.data;
+  return Array.isArray(data.data) ? data.data : [];
 };
 
-export const getPlaylistTracks = async (id: string): Promise<TrackType[]> => {
+export const getPlaylistTracks = async (id: string): Promise<{ items: TrackType[] }> => {
   const res = await fetch(`${BASE_URL}/catalog/selection/${id}/`, {
     next: { revalidate: 3600 },
   });
@@ -18,5 +18,5 @@ export const getPlaylistTracks = async (id: string): Promise<TrackType[]> => {
     throw new Error(`Ошибка при получении подборки ${id}`);
   }
   const data = await res.json();
-  return data.items;
+  return { items: Array.isArray(data.items) ? data.items : [] };
 };

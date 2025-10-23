@@ -16,19 +16,28 @@ export const useLikeTrack = (track: TrackType | null): ReturnType => {
   const { favoriteTracks } = useAppSelector((state) => state.tracks);
   const { access, refresh } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
+  const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
 
-  const isLike = favoriteTracks.some((t) => t._id === track?._id);
+  const isLike = track 
+    ? (track.starred_user && Array.isArray(track.starred_user) 
+        ? track.starred_user.includes(userId) 
+        : false) || favoriteTracks.some((t) => t._id === track._id)
+    : false;
+
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const toggleLike = useCallback(() => {
     if (!access || !track) {
-      setErrorMsg('Нет авторизации');
+      setErrorMsg('Нет авторизации или трек не выбран');
       return;
     }
 
-    const actionApi = isLike ? removeLike : addLike;
-    const actionSlice = isLike ? removeLikedTracks : addLikedTracks;
+    const currentLiked = track.starred_user && Array.isArray(track.starred_user) 
+      ? track.starred_user.includes(userId) 
+      : false;
+    const actionApi = currentLiked ? removeLike : addLike;
+    const actionSlice = currentLiked ? removeLikedTracks : addLikedTracks;
 
     setIsLoading(true);
     setErrorMsg(null);
@@ -39,19 +48,20 @@ export const useLikeTrack = (track: TrackType | null): ReturnType => {
       dispatch,
     )
       .then(() => {
+        track.starred_user = track.starred_user && Array.isArray(track.starred_user)
+          ? currentLiked
+            ? track.starred_user.filter(id => id !== userId)
+            : [...track.starred_user, userId]
+          : currentLiked ? [] : [userId];
         dispatch(actionSlice(track));
       })
       .catch((error) => {
-        if (error instanceof Error) {
-          setErrorMsg(error.message);
-        } else {
-          setErrorMsg('Неизвестная ошибка');
-        }
+        setErrorMsg(error instanceof Error ? error.message : 'Неизвестная ошибка');
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [access, refresh, track, isLike, dispatch]);
+  }, [access, refresh, track, userId, dispatch]);
 
   return { isLoading, errorMsg, toggleLike, isLike };
 };

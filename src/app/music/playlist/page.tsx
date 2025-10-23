@@ -13,10 +13,14 @@ import { data } from '@/data';
 export default function MyPlaylistPage() {
   const favoriteTrackIds = useAppSelector((state) => state.tracks.favoriteTrackIds);
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
 
   const favoriteTracks: TrackType[] = useMemo(() => {
-    return data.filter((track) => favoriteTrackIds.includes(track._id));
-  }, [favoriteTrackIds]);
+    return data.filter((track) =>
+      favoriteTrackIds.includes(track._id) ||
+      (track.starred_user && Array.isArray(track.starred_user) && track.starred_user.includes(userId))
+    );
+  }, [favoriteTrackIds, userId]);
 
   if (!isAuthenticated) {
     return (
@@ -24,13 +28,7 @@ export default function MyPlaylistPage() {
         <div className={styles.container}>
           <main className={styles.main}>
             <Navigation />
-            <div
-              style={{
-                padding: '40px',
-                textAlign: 'center',
-                color: '#999',
-              }}
-            >
+            <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
               Войдите в аккаунт, чтобы увидеть "Мой плейлист"
             </div>
             <Sidebar />
