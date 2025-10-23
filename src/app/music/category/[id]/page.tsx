@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import classNames from 'classnames';
-import styles from '../main/page.module.css';
+import styles from '../../../main/page.module.css';
 import Bar from '@/components/Bar/Bar';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Centerblock from '@/components/Centerblock/Centerblock';

@@ -1,4 +1,4 @@
-import styles from './progressBar.module.css';
+import styles from './ProgressBar.module.css';
 import { ChangeEvent } from 'react';
 
 type ProgressBarProp = {
