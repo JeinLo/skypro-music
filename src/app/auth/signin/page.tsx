@@ -1,11 +1,14 @@
 'use client';
 
 import { authUser } from '@/services/auth/authApi';
+import { getTokens } from '@/services/auth/tokenApi';
 import styles from './signin.module.css';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/store';
+import { setTokens } from '@/store/features/authSlice';
 
 export default function Signin() {
   const [email, setEmail] = useState('');
@@ -13,6 +16,7 @@ export default function Signin() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -22,25 +26,25 @@ export default function Signin() {
     setPassword(e.target.value);
   };
 
-  const onSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setErrorMessage('');
-
     if (!email.trim() || !password.trim()) {
       return setErrorMessage('Заполните все поля');
     }
+
     setIsLoading(true);
 
-    authUser({ email, password })
-      .then(() => {
-        router.push('/music/main');
-      })
-      .catch((error) => {
-        setErrorMessage(error.message);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    try {
+      await authUser({ email, password });
+      const tokens = await getTokens(email, password);
+      dispatch(setTokens(tokens));
+      router.push('/music/main');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Ошибка входа');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,18 +57,18 @@ export default function Signin() {
       <input
         className={classNames(styles.modal__input, styles.login)}
         type="text"
-        name="login"
         placeholder="Почта"
         value={email}
         onChange={onChangeEmail}
+        disabled={isLoading}
       />
       <input
-        className={classNames(styles.modal__input)}
+        className={styles.modal__input}
         type="password"
-        name="password"
         placeholder="Пароль"
         value={password}
         onChange={onChangePassword}
+        disabled={isLoading}
       />
       <div className={styles.errorContainer}>{errorMessage}</div>
       <button
@@ -72,7 +76,7 @@ export default function Signin() {
         onClick={onSubmit}
         className={styles.modal__btnEnter}
       >
-        Войти
+        {isLoading ? 'Вход...' : 'Войти'}
       </button>
       <Link href="/auth/signup" className={styles.modal__btnSignup}>
         Зарегистрироваться

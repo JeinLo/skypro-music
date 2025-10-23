@@ -155,3 +155,25 @@
   text-align: right;
   color: #696969;
 }
+
+.track__timeSvg.loading {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.active {
+  fill: #ad61ff !important;
+}

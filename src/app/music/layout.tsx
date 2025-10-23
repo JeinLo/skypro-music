@@ -1,12 +1,29 @@
-import { ReactNode } from 'react';
-import styles from './main/page.module.css';
+import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
+import ReduxProvider from "@/store/ReduxProvider";
 
-export default function MusicLayout({ children }: { children: ReactNode }) {
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Skypro Music",
+  description: "Музыкальный плеер",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <main className={styles.main}>{children}</main>
-      </div>
-    </div>
+    <ReduxProvider>
+      <html lang="ru">
+        <body className={`${montserrat.variable}`}>
+          {children}
+        </body>
+      </html>
+    </ReduxProvider>
   );
 }
