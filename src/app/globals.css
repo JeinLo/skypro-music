@@ -6,6 +6,7 @@
 
 body {
   font-family: var(--font-montserrat), 'Arial';
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, p {
@@ -22,4 +23,61 @@ a {
 
 audio {
   display: none;
+}
+
+/* Прокрутка для контейнеров */
+.centerblock__content,
+.content__playlist {
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+  scrollbar-width: thin;
+  scrollbar-color: #ad61ff #313131;
+}
+
+.centerblock__content::-webkit-scrollbar,
+.content__playlist::-webkit-scrollbar {
+  width: 6px;
+}
+
+.centerblock__content::-webkit-scrollbar-track,
+.content__playlist::-webkit-scrollbar-track {
+  background: #313131;
+}
+
+.centerblock__content::-webkit-scrollbar-thumb,
+.content__playlist::-webkit-scrollbar-thumb {
+  background: #ad61ff;
+  border-radius: 3px;
+}
+
+.centerblock__content::-webkit-scrollbar-thumb:hover,
+.content__playlist::-webkit-scrollbar-thumb:hover {
+  background: #d9b6ff;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .centerblock__content,
+  .content__playlist {
+    max-height: calc(100vh - 150px);
+  }
+}
+
+/* Стили для лайков */
+.track__timeSvg {
+  cursor: pointer;
+  transition: fill 0.2s;
+}
+
+.track__timeSvg.active {
+  fill: #ad61ff !important;
+}
+
+.track__timeSvg.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

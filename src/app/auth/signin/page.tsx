@@ -54,6 +54,8 @@ export default function Signin() {
         className={classNames(styles.modal__input, styles.login)}
         type="text"
         name="login"
+        id="email"
+        autoComplete="email"
         placeholder="Почта"
         value={email}
         onChange={onChangeEmail}
@@ -62,6 +64,8 @@ export default function Signin() {
         className={classNames(styles.modal__input)}
         type="password"
         name="password"
+        id="password"
+        autoComplete="off"
         placeholder="Пароль"
         value={password}
         onChange={onChangePassword}

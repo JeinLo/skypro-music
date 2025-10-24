@@ -7,11 +7,10 @@ export const getTracks = async (): Promise<TrackType[]> => {
   if (!res.ok) {
     throw new Error('Ошибка при получении треков');
   }
-  const json = await res.json();
-  return json.data;
+  const data = await res.json();
+  return data.data;
 };
 
-// Получение подборки по ID
 export const getPlaylistTracks = async (id: string): Promise<TrackType[]> => {
   const res = await fetch(`${BASE_URL}/catalog/selection/${id}/`, {
     next: { revalidate: 3600 },
@@ -19,11 +18,6 @@ export const getPlaylistTracks = async (id: string): Promise<TrackType[]> => {
   if (!res.ok) {
     throw new Error(`Ошибка при получении подборки ${id}`);
   }
-
-  const json = await res.json();
-  const trackIds: number[] = json.data.items; // ← массив ID
-
-  // Получаем все треки и фильтруем по ID
-  const allTracks = await getTracks();
-  return allTracks.filter((track) => trackIds.includes(track._id));
+  const data = await res.json();
+  return data.items;
 };

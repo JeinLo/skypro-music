@@ -12,7 +12,7 @@ export default function Sidebar() {
   const [username, setUsername] = useState('Guest');
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
+    const storedUsername = typeof window !== 'undefined' ? localStorage.getItem('username') : null;
     if (storedUsername) {
       setUsername(storedUsername);
     }
@@ -36,24 +36,14 @@ export default function Sidebar() {
       <div className={styles.sidebar__block}>
         <div className={styles.sidebar__list}>
           <div className={styles.sidebar__item}>
-            <Link className={styles.sidebar__link} href="/music/category/1">
-              <Image
-                className={styles.sidebar__img}
-                src="/img/playlist01.png"
-                alt="day's playlist"
-                width={250}
-                height={170}
-              />
-            </Link>
-          </div>
-          <div className={styles.sidebar__item}>
             <Link className={styles.sidebar__link} href="/music/category/2">
               <Image
                 className={styles.sidebar__img}
-                src="/img/playlist02.png"
-                alt="day's playlist"
+                src="/img/playlist01.png"
+                alt="Плейлист дня"
                 width={250}
                 height={170}
+                priority
               />
             </Link>
           </div>
@@ -61,10 +51,23 @@ export default function Sidebar() {
             <Link className={styles.sidebar__link} href="/music/category/3">
               <Image
                 className={styles.sidebar__img}
-                src="/img/playlist03.png"
-                alt="day's playlist"
+                src="/img/playlist02.png"
+                alt="100 танцевальных хитов"
                 width={250}
                 height={170}
+                priority // ← Добавлено для LCP
+              />
+            </Link>
+          </div>
+          <div className={styles.sidebar__item}>
+            <Link className={styles.sidebar__link} href="/music/category/4">
+              <Image
+                className={styles.sidebar__img}
+                src="/img/playlist03.png"
+                alt="Инди-заряд"
+                width={250}
+                height={170}
+                priority
               />
             </Link>
           </div>

@@ -16,7 +16,7 @@ type SignupResponse = {
   message: string;
   result: {
     username: string;
-    email: string;
+  email: string;
     _id: number;
   };
   success: boolean;
