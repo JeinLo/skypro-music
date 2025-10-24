@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import classNames from 'classnames';
-import styles from '../main/page.module.css';
+import styles from '../../main/page.module.css';
 import Bar from '@/components/Bar/Bar';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Centerblock from '@/components/Centerblock/Centerblock';
@@ -26,8 +26,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     const fetchTracks = async () => {
       try {
         const { id } = await params;
-        const response = await getPlaylistTracks(id);
-        const fetchedTracks = Array.isArray(response.items) ? response.items : [];
+        const fetchedTracks = await getPlaylistTracks(id); // ← response уже TrackType[]
         const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
         const updatedTracks = fetchedTracks.map((track: TrackType) => ({
           ...track,
