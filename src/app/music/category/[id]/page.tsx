@@ -1,70 +1,94 @@
 'use client';
-
-import { Suspense, useEffect, useState } from 'react';
-import classNames from 'classnames';
-import styles from '../../main/page.module.css';
-import Bar from '@/components/Bar/Bar';
-import Sidebar from '@/components/Sidebar/Sidebar';
 import Centerblock from '@/components/Centerblock/Centerblock';
 import Navigation from '@/components/Navigation/Navigation';
+import Sidebar from '@/components/Sidebar/Sidebar';
+import Bar from '@/components/Bar/Bar';
+import styles from '../../main/page.module.css';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { useEffect, useMemo, useState } from 'react';
 import { getPlaylistTracks } from '@/services/tracks/tracksApi';
-import { TrackType } from '@/sharedTypes/sharedTypes';
-import { useAppDispatch } from '@/store/store';
-import { setPlaylist } from '@/store/features/trackSlice';
+import { setCollectionTracks, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
+import { useParams } from 'next/navigation';
+import { AxiosError } from 'axios';
 
-type CategoryPageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default function CategoryPage({ params }: CategoryPageProps) {
+export default function CategoryPage() {
   const dispatch = useAppDispatch();
-  const [tracks, setTracks] = useState<TrackType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const params = useParams<{ id: string }>();
+  const { collectionTracks, filters, searchTrack } = useAppSelector(
+    (state) => state.tracks
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessageLocal] = useState('');
 
   useEffect(() => {
-    const fetchTracks = async () => {
+    const fetchSelectionTracks = async () => {
+      setIsLoading(true);
       try {
-        const { id } = await params;
-        const fetchedTracks = await getPlaylistTracks(id); // ← response уже TrackType[]
-        const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
-        const updatedTracks = fetchedTracks.map((track: TrackType) => ({
-          ...track,
-          isLiked: track.starred_user && Array.isArray(track.starred_user) ? track.starred_user.includes(userId) : false,
-        }));
-
-        setTracks(updatedTracks);
-        dispatch(setPlaylist(updatedTracks));
-        setLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Неизвестная ошибка');
-        setLoading(false);
+        const res = await getPlaylistTracks(params.id);
+        dispatch(setCollectionTracks(res)); // res уже TrackType[]
+        dispatch(setTitlePlaylist(`Подборка ${params.id}`));
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          if (error.response) {
+            setErrorMessageLocal(error.response.data.message || 'Ошибка загрузки подборки');
+            dispatch(setErrorMessage(error.response.data.message || 'Ошибка загрузки подборки'));
+          } else if (error.request) {
+            setErrorMessageLocal('Похоже, что-то с интернет-соединением... Попробуйте позже');
+            dispatch(setErrorMessage('Похоже, что-то с интернет-соединением... Попробуйте позже'));
+          } else {
+            setErrorMessageLocal('Неизвестная ошибка. Попробуйте перезагрузить страницу');
+            dispatch(setErrorMessage('Неизвестная ошибка. Попробуйте перезагрузить страницу'));
+          }
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
+    fetchSelectionTracks();
+  }, [dispatch, params.id]);
 
-    fetchTracks();
-  }, [params, dispatch]);
-
-  if (loading) {
-    return <p style={{ padding: '40px', textAlign: 'center' }}>Загрузка подборки...</p>;
-  }
-
-  if (error) {
-    return <p style={{ padding: '40px', textAlign: 'center' }}>{error}</p>;
-  }
+  const playlist = useMemo(() => {
+    let result = collectionTracks;
+    if (filters.author.length) {
+      result = result.filter((track) => filters.author.includes(track.author));
+    }
+    if (filters.genre.length) {
+      result = result.filter((track) =>
+        track.genre.some((genre) => filters.genre.includes(genre))
+      );
+    }
+    if (searchTrack) {
+      result = result.filter(
+        (track) =>
+          track.name.toLowerCase().includes(searchTrack.toLowerCase()) ||
+          track.author.toLowerCase().includes(searchTrack.toLowerCase())
+      );
+    }
+    if (filters.sortByYear !== 'По умолчанию') {
+      result = [...result].sort((a, b) => {
+        const dateA = new Date(a.release_date).getTime();
+        const dateB = new Date(b.release_date).getTime();
+        return filters.sortByYear === 'Сначала новые' ? dateB - dateA : dateA - dateB;
+      });
+    }
+    return result;
+  }, [collectionTracks, filters, searchTrack]);
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <main className={styles.main}>
           <Navigation />
-          <Suspense fallback={<p style={{ padding: '40px', textAlign: 'center' }}>Загрузка...</p>}>
-            <Centerblock tracks={tracks} />
-          </Suspense>
+          <Centerblock
+            isLoading={isLoading}
+            tracks={playlist}
+            title={`Подборка ${params.id}`}
+            errorMessage={errorMessage}
+            pagePlaylist={collectionTracks}
+          />
           <Sidebar />
         </main>
         <Bar />
-        <footer className="footer"></footer>
       </div>
     </div>
   );

@@ -372,3 +372,18 @@
     cursor: pointer;
   }
 }
+
+.errorContainer {
+  color: red;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.trackPlay__like.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

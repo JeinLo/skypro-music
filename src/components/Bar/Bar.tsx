@@ -1,7 +1,6 @@
 'use client';
-
 import Link from 'next/link';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState, useCallback } from 'react';
 import classNames from 'classnames';
 import styles from './Bar.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
@@ -11,7 +10,10 @@ import { getTimePanel } from '@/utils/helper';
 import { useLikeTrack } from '@/hooks/useLikeTrack';
 
 export default function Bar() {
-  const { currentTrack, isPlay, isShuffle } = useAppSelector((state) => state.tracks);
+  const tracksState = useAppSelector((state) => state.tracks);
+  const currentTrack = tracksState?.currentTrack;
+  const isPlay = tracksState?.isPlay ?? false;
+  const isShuffle = tracksState?.isShuffle ?? false;
   const dispatch = useAppDispatch();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isLoop, setIsLoop] = useState(false);
@@ -19,8 +21,7 @@ export default function Bar() {
   const [isLoadedTrack, setIsLoadedTrack] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-
-  const { isLike, toggleLike, isLoading: likeLoading } = useLikeTrack(currentTrack);
+  const { isLoading: isLikeLoading, errorMsg: likeError, toggleLike, isLike } = useLikeTrack(currentTrack);
 
   useEffect(() => {
     if (audioRef.current && currentTrack) {
@@ -33,7 +34,11 @@ export default function Bar() {
       const handleLoadedMetadata = () => {
         setIsLoadedTrack(true);
         setDuration(audioRef.current!.duration || 0);
-        if (isPlay) audioRef.current!.play().catch(() => {});
+        if (isPlay) {
+          audioRef.current!.play().catch((error) => {
+            console.error('Ошибка воспроизведения:', error);
+          });
+        }
       };
 
       const handleTimeUpdate = () => {
@@ -41,7 +46,9 @@ export default function Bar() {
       };
 
       const handleEnded = () => {
-        if (!isLoop) dispatch(setNextTrack());
+        if (!isLoop) {
+          dispatch(setNextTrack());
+        }
       };
 
       audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -56,37 +63,53 @@ export default function Bar() {
         audioRef.current?.removeEventListener('ended', handleEnded);
       };
     }
-  }, [currentTrack, isLoop, volume, dispatch]);
+  }, [currentTrack, isLoop, dispatch]);
 
   useEffect(() => {
     if (audioRef.current && isLoadedTrack) {
       if (isPlay) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch((error) => {
+          console.error('Ошибка воспроизведения:', error);
+        });
       } else {
         audioRef.current.pause();
       }
     }
   }, [isPlay, isLoadedTrack]);
 
-  const togglePlay = () => dispatch(setIsPlay(!isPlay));
-  const onToggleLoop = () => setIsLoop(!isLoop);
-  const onToggleShuffle = () => dispatch(toggleShuffle());
-  const onNextTrack = () => dispatch(setNextTrack());
-  const onPrevTrack = () => dispatch(setPrevTrack());
+  const togglePlay = useCallback(() => {
+    dispatch(setIsPlay(!isPlay));
+  }, [dispatch, isPlay]);
 
-  const onChangeProgress = (e: ChangeEvent<HTMLInputElement>) => {
+  const onToggleLoop = useCallback(() => {
+    setIsLoop(!isLoop);
+  }, [isLoop]);
+
+  const onToggleShuffle = useCallback(() => {
+    dispatch(toggleShuffle());
+  }, [dispatch]);
+
+  const onNextTrack = useCallback(() => {
+    dispatch(setNextTrack());
+  }, [dispatch]);
+
+  const onPrevTrack = useCallback(() => {
+    dispatch(setPrevTrack());
+  }, [dispatch]);
+
+  const onChangeProgress = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     if (audioRef.current) {
-      const time = Number(e.target.value);
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
+      const inputTime = Number(e.target.value);
+      audioRef.current.currentTime = inputTime;
+      setCurrentTime(inputTime);
     }
-  };
+  }, []);
 
   if (!currentTrack) return null;
 
   return (
     <div className={styles.bar}>
-      <audio ref={audioRef} />
+      <audio ref={audioRef} src={currentTrack.track_file} />
       <div className={styles.bar__content}>
         <div className={styles.timePanel}>{getTimePanel(currentTime, duration)}</div>
         <ProgressBar
@@ -106,7 +129,7 @@ export default function Bar() {
               </div>
               <div className={classNames(styles.player__btnPlay, styles.btn)} onClick={togglePlay}>
                 <svg className={styles.player__btnPlaySvg}>
-                  <use xlinkHref={`/img/icon/sprite.svg#icon-${isPlay ? 'pause' : 'play'}`}></use>
+                  <use xlinkHref={`/img/icon/sprite.svg#icon-${isPlay ? 'pause' : 'play'}`} />
                 </svg>
               </div>
               <div className={classNames(styles.player__btnNext, styles.btnIcon)} onClick={onNextTrack}>
@@ -131,7 +154,6 @@ export default function Bar() {
                 </svg>
               </div>
             </div>
-
             <div className={styles.player__trackPlay}>
               <div className={styles.trackPlay__contain}>
                 <div className={styles.trackPlay__image}>
@@ -150,21 +172,19 @@ export default function Bar() {
                   </Link>
                 </div>
               </div>
-
               <div className={styles.trackPlay__likeDis}>
                 <div
                   className={classNames(styles.trackPlay__like, styles.btnIcon, {
-                    [styles.loading]: likeLoading,
+                    [styles.active]: isLike,
+                    [styles.loading]: isLikeLoading,
                   })}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleLike();
-                  }}
+                  onClick={toggleLike}
                 >
                   <svg className={styles.trackPlay__likeSvg}>
-                    <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'dislike' : 'like'}`} />
+                    <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'like-filled' : 'like'}`} />
                   </svg>
                 </div>
+                {likeError && <div className={styles.errorContainer}>{likeError}</div>}
               </div>
             </div>
           </div>
@@ -177,15 +197,18 @@ export default function Bar() {
               </div>
               <div className={classNames(styles.volume__progress, styles.btn)}>
                 <input
-                  className={styles.volume__progressLine}
+                  className={classNames(styles.volume__progressLine, styles.btn)}
                   type="range"
+                  name="range"
                   min="0"
                   max="100"
                   value={volume * 100}
                   onChange={(e) => {
-                    const v = Number(e.target.value) / 100;
-                    setVolume(v);
-                    if (audioRef.current) audioRef.current.volume = v;
+                    const newVolume = Number(e.target.value) / 100;
+                    setVolume(newVolume);
+                    if (audioRef.current) {
+                      audioRef.current.volume = newVolume;
+                    }
                   }}
                 />
               </div>

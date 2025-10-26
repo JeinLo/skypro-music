@@ -1,25 +1,23 @@
-// src/utils/withReauth.ts
-import { AxiosError } from 'axios';
-import { refreshToken } from '@/services/auth/tokenApi';
-import { AppDispatch } from '@/store/store';
+import { refreshToken } from '@/services/auth/authApi';
 import { setAccessToken } from '@/store/features/authSlice';
+import { AppDispatch } from '@/store/store';
+import { AxiosError } from 'axios';
 
 export const withReauth = async <T>(
-  apiFunction: (access: string) => Promise<T>,
+  apiCall: () => Promise<T>,
   refresh: string,
-  dispatch: AppDispatch,
+  dispatch: AppDispatch
 ): Promise<T> => {
   try {
-    return await apiFunction('');
+    return await apiCall();
   } catch (error) {
-    const axiosError = error as AxiosError;
-    if (axiosError.response?.status === 401) {
+    if (error instanceof AxiosError && error.response?.status === 401) {
       try {
-        const newTokens = await refreshToken(refresh);
-        dispatch(setAccessToken(newTokens.access));
-        return await apiFunction(newTokens.access);
+        const { access } = await refreshToken(refresh);
+        dispatch(setAccessToken(access));
+        return await apiCall();
       } catch (refreshError) {
-        throw refreshError;
+        throw new Error('Не удалось обновить токен. Пожалуйста, войдите снова.');
       }
     }
     throw error;

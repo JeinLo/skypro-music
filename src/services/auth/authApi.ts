@@ -1,76 +1,57 @@
 import axios from 'axios';
-import { BASE_URL } from '../constants';
+import { BASE_URL } from '@/services/constants';
+import { createUserProp } from './types';
 
-export type AuthUserProps = {
-  email: string;
-  password: string;
-};
-
-export type AuthUserReturn = {
-  email: string;
-  username: string;
-  _id: number;
-};
-
-type SignupResponse = {
-  message: string;
-  result: {
-    username: string;
-  email: string;
-    _id: number;
+export const createUser = ({ email, password }: createUserProp) => {
+  const data = {
+    email,
+    password,
+    username: email,
   };
-  success: boolean;
+  console.log('Signup URL:', `${BASE_URL}/user/signup/`, 'Data:', data);
+  return axios({
+    method: 'post',
+    url: `${BASE_URL}/user/signup/`,
+    headers: {
+      'content-type': 'application/json',
+    },
+    data,
+  });
 };
 
-export const authUser = async (data: AuthUserProps): Promise<AuthUserReturn> => {
-  try {
-    const res = await axios.post<AuthUserReturn>(`${BASE_URL}/user/login/`, data, {
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
-    const userData = res.data;
-    localStorage.setItem('username', userData.username);
-    localStorage.setItem('userId', String(userData._id));
-    return userData;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const { status, data } = error.response;
-      if (status === 400 || status === 401) {
-        throw new Error(data.message || 'Ошибка авторизации');
-      }
-      throw new Error('Сервер недоступен, попробуйте позже');
-    }
-    throw new Error('Отсутствует интернет, попробуйте позже');
-  }
-};
-
-export const signupUser = async (
-  data: AuthUserProps & { username: string },
-): Promise<AuthUserReturn> => {
-  try {
-    const res = await axios.post<SignupResponse>(`${BASE_URL}/user/signup/`, data, {
-      headers: {
-        'content-type': 'application/json',
-      },
-    });
-    const { result } = res.data;
-    localStorage.setItem('username', result.username);
-    localStorage.setItem('userId', String(result._id));
-    return result;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error) && error.response) {
-      const { status, data } = error.response;
-      if (status === 403) {
-        throw new Error(data.message || 'Введенный Email уже занят');
-      }
-      throw new Error('Сервер недоступен, попробуйте позже');
-    }
-    throw new Error('Отсутствует интернет, попробуйте позже');
-  }
+export const loginUser = (data: createUserProp) => {
+  console.log('Login URL:', `${BASE_URL}/user/login/`, 'Data:', data);
+  return axios({
+    method: 'post',
+    url: `${BASE_URL}/user/login/`,
+    data,
+  });
 };
 
 export const logoutUser = () => {
-  localStorage.removeItem('username');
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
   localStorage.removeItem('userId');
+  localStorage.removeItem('username');
+  localStorage.removeItem('favoriteTrackIds');
+};
+
+type accessTokenType = {
+  access: string;
+};
+
+type refreshTokenType = {
+  refresh: string;
+};
+
+type tokensType = accessTokenType & refreshTokenType;
+
+export const getTokens = (data: createUserProp): Promise<tokensType> => {
+  console.log('Token URL:', `${BASE_URL}/user/token/`, 'Data:', data);
+  return axios.post(`${BASE_URL}/user/token/`, data).then((res) => res.data);
+};
+
+export const refreshToken = (refresh: string): Promise<accessTokenType> => {
+  console.log('Refresh Token URL:', `${BASE_URL}/user/token/refresh/`, 'Data:', { refresh });
+  return axios.post(`${BASE_URL}/user/token/refresh/`, { refresh }).then((res) => res.data);
 };

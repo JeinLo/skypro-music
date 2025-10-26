@@ -177,3 +177,9 @@
 .active {
   fill: #ad61ff !important;
 }
+
+.errorContainer {
+  color: red;
+  font-size: 12px;
+  margin-right: 10px;
+}

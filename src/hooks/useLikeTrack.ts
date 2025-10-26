@@ -1,67 +1,74 @@
-import { useState, useCallback } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store/store';
-import { addLikedTracks, removeLikedTracks } from '@/store/features/trackSlice';
-import { withReauth } from '@/utils/withReauth';
-import { addLike, removeLike } from '@/services/tracks/favoriteApi';
 import { TrackType } from '@/sharedTypes/sharedTypes';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { useState, useCallback } from 'react';
+import { withReauth } from '@/utils/withReauth';
+import { AxiosError } from 'axios';
+import { addLikedTracks, removeLikedTracks } from '@/store/features/trackSlice';
+import { addLike, removeLike } from '@/services/tracks/favoriteApi';
 
-type ReturnType = {
+type returnTypeHook = {
   isLoading: boolean;
   errorMsg: string | null;
   toggleLike: () => void;
   isLike: boolean;
 };
 
-export const useLikeTrack = (track: TrackType | null): ReturnType => {
+export const useLikeTrack = (track: TrackType | null): returnTypeHook => {
   const { favoriteTracks } = useAppSelector((state) => state.tracks);
   const { access, refresh } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
-  const userId = typeof window !== 'undefined' ? parseInt(localStorage.getItem('userId') || '0', 10) : 0;
 
-  const isLike = track 
-    ? (track.starred_user && Array.isArray(track.starred_user) 
-        ? track.starred_user.includes(userId) 
-        : false) || favoriteTracks.some((t) => t._id === track._id)
-    : false;
-
+  const isLike = track ? favoriteTracks.some((t) => t._id === track._id) : false;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const toggleLike = useCallback(() => {
-    if (!access || !track) {
-      setErrorMsg('Нет авторизации или трек не выбран');
+    if (!access || !refresh) {
+      setErrorMsg('Пожалуйста, войдите в аккаунт');
       return;
     }
 
-    const currentLiked = track.starred_user && Array.isArray(track.starred_user) 
-      ? track.starred_user.includes(userId) 
-      : false;
-    const actionApi = currentLiked ? removeLike : addLike;
-    const actionSlice = currentLiked ? removeLikedTracks : addLikedTracks;
+    if (!track) {
+      setErrorMsg('Трек не выбран');
+      return;
+    }
+
+    const actionApi = isLike ? removeLike : addLike;
+    const actionSlice = isLike ? removeLikedTracks : addLikedTracks;
 
     setIsLoading(true);
     setErrorMsg(null);
 
     withReauth(
-      (newToken) => actionApi(newToken || access, track._id),
-      refresh!,
-      dispatch,
+      () => actionApi(access, track._id),
+      refresh,
+      dispatch
     )
       .then(() => {
-        track.starred_user = track.starred_user && Array.isArray(track.starred_user)
-          ? currentLiked
-            ? track.starred_user.filter(id => id !== userId)
-            : [...track.starred_user, userId]
-          : currentLiked ? [] : [userId];
         dispatch(actionSlice(track));
       })
       .catch((error) => {
-        setErrorMsg(error instanceof Error ? error.message : 'Неизвестная ошибка');
+        if (error instanceof AxiosError) {
+          if (error.response) {
+            setErrorMsg(error.response.data.message || 'Ошибка сервера');
+          } else if (error.request) {
+            setErrorMsg('Похоже, что-то с интернет-соединением. Попробуйте позже');
+          } else {
+            setErrorMsg('Неизвестная ошибка');
+          }
+        } else {
+          setErrorMsg('Неизвестная ошибка');
+        }
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [access, refresh, track, userId, dispatch]);
+  }, [access, refresh, track, isLike, dispatch]);
 
-  return { isLoading, errorMsg, toggleLike, isLike };
+  return {
+    isLoading,
+    errorMsg,
+    toggleLike,
+    isLike,
+  };
 };

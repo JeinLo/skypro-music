@@ -121,3 +121,10 @@
   font-size: 12px;
   color: red;
 }
+.modal__form input:first-child {
+  margin-bottom: 30px;
+}
+
+.loading__btn {
+  background-color: #83828a;
+}

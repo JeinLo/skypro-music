@@ -1,25 +1,23 @@
 import axios from 'axios';
-import { BASE_URL } from '../constants';
+import { BASE_URL } from '@/services/constants';
 
-const api = axios.create({
-  baseURL: BASE_URL,
-});
-
-export const addLike = async (access: string, trackId: number) => {
-  await api.post(`/catalog/track/${trackId}/favorite/`, {}, {
+export const getFavorites = (access: string) => {
+  console.log('Get Favorites URL:', `${BASE_URL}/catalog/track/favorite/all/`);
+  return axios.get(`${BASE_URL}/catalog/track/favorite/all/`, {
     headers: { Authorization: `Bearer ${access}` },
   });
 };
 
-export const removeLike = async (access: string, trackId: number) => {
-  await api.delete(`/catalog/track/${trackId}/favorite/`, {
+export const addLike = (access: string, trackId: number) => {
+  console.log('Add Like URL:', `${BASE_URL}/catalog/track/${trackId}/favorite/`);
+  return axios.post(`${BASE_URL}/catalog/track/${trackId}/favorite/`, {}, {
     headers: { Authorization: `Bearer ${access}` },
   });
 };
 
-export const getFavorites = async (access: string) => {
-  const res = await api.get('/catalog/track/favorite/all/', {
+export const removeLike = (access: string, trackId: number) => {
+  console.log('Remove Like URL:', `${BASE_URL}/catalog/track/${trackId}/favorite/`);
+  return axios.delete(`${BASE_URL}/catalog/track/${trackId}/favorite/`, {
     headers: { Authorization: `Bearer ${access}` },
   });
-  return res.data;
 };

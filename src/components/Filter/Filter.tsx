@@ -1,24 +1,37 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import classNames from 'classnames';
 import styles from './Filter.module.css';
-import { data } from '@/data';
-import { getUniqueValuesByKey } from '@/utils/helper';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { setFilters } from '@/store/features/trackSlice';
 import FilterItem from '../FilterItem/FilterItem';
+import { getUniqueValuesByKey } from '@/utils/helper';
+import { data } from '@/data';
 
 type FilterName = 'author' | 'year' | 'genre';
 
 export default function Filter() {
+  const dispatch = useAppDispatch();
+  const { allTracks } = useAppSelector((state) => state.tracks);
   const [activeFilter, setActiveFilter] = useState<FilterName | null>(null);
 
-  const authors = getUniqueValuesByKey(data, 'author').filter((author) => author !== '-');
-  const genres = getUniqueValuesByKey(data, 'genre');
+  const authors = getUniqueValuesByKey(allTracks.length > 0 ? allTracks : data, 'author').filter(
+    (author) => author !== '-'
+  );
+  const genres = getUniqueValuesByKey(allTracks.length > 0 ? allTracks : data, 'genre');
   const years = ['По умолчанию', 'Сначала новые', 'Сначала старые'];
 
-  const toggleFilter = (filter: FilterName) => {
+  const toggleFilter = useCallback((filter: FilterName) => {
     setActiveFilter((prev) => (prev === filter ? null : filter));
-  };
+  }, []);
+
+  const handleFilterSelect = useCallback(
+    (filterType: FilterName, value: string) => {
+      dispatch(setFilters({ filterType, value }));
+      setActiveFilter(null);
+    },
+    [dispatch]
+  );
 
   return (
     <div className={styles.centerblock__filter}>
@@ -35,7 +48,11 @@ export default function Filter() {
         {activeFilter === 'author' && (
           <div className={styles.filter__list}>
             {authors.map((author) => (
-              <FilterItem key={author} value={author} />
+              <FilterItem
+                key={author}
+                value={author}
+                onSelect={() => handleFilterSelect('author', author)}
+              />
             ))}
           </div>
         )}
@@ -52,7 +69,11 @@ export default function Filter() {
         {activeFilter === 'year' && (
           <div className={styles.filter__list}>
             {years.map((year) => (
-              <FilterItem key={year} value={year} />
+              <FilterItem
+                key={year}
+                value={year}
+                onSelect={() => handleFilterSelect('year', year)}
+              />
             ))}
           </div>
         )}
@@ -69,7 +90,11 @@ export default function Filter() {
         {activeFilter === 'genre' && (
           <div className={styles.filter__list}>
             {genres.map((genre) => (
-              <FilterItem key={genre} value={genre} />
+              <FilterItem
+                key={genre}
+                value={genre}
+                onSelect={() => handleFilterSelect('genre', genre)}
+              />
             ))}
           </div>
         )}

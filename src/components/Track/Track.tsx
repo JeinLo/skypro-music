@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import classNames from 'classnames';
 import styles from './Track.module.css';
@@ -8,7 +7,7 @@ import { formatTime } from '@/utils/helper';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setCurrentTrack } from '@/store/features/trackSlice';
 import { useLikeTrack } from '@/hooks/useLikeTrack';
-import { useMemo } from 'react';
+import { useCallback } from 'react';
 
 type TrackProps = {
   track: TrackType;
@@ -17,17 +16,15 @@ type TrackProps = {
 
 export default function Track({ track, playlist }: TrackProps) {
   const dispatch = useAppDispatch();
-  const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
   const isPlay = useAppSelector((state) => state.tracks.isPlay);
-  const { isLike, toggleLike, isLoading } = useLikeTrack(track);
+  const currentTrack = useAppSelector((state) => state.tracks.currentTrack);
+  const { isLoading: isLikeLoading, errorMsg: likeError, toggleLike, isLike } = useLikeTrack(track);
 
   const isCurrentTrack = currentTrack?._id === track._id;
 
-  const onClickCurrentTrack = () => {
+  const onClickCurrentTrack = useCallback(() => {
     dispatch(setCurrentTrack({ track, playlist }));
-  };
-
-  const memoizedToggleLike = useMemo(() => toggleLike, [toggleLike]);
+  }, [dispatch, track, playlist]);
 
   return (
     <div className={styles.playlist__item} onClick={onClickCurrentTrack}>
@@ -52,7 +49,7 @@ export default function Track({ track, playlist }: TrackProps) {
               })}
               href=""
             >
-              {track.name}
+              {track.name} <span className={styles.track__titleSpan}></span>
             </Link>
           </div>
         </div>
@@ -70,15 +67,16 @@ export default function Track({ track, playlist }: TrackProps) {
           <svg
             className={classNames(styles.track__timeSvg, {
               [styles.active]: isLike,
-              [styles.loading]: isLoading,
+              [styles.loading]: isLikeLoading,
             })}
             onClick={(e) => {
               e.stopPropagation();
-              memoizedToggleLike();
+              toggleLike();
             }}
           >
-            <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'dislike' : 'like'}`} />
+            <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'like-filled' : 'like'}`} />
           </svg>
+          {likeError && <div className={styles.errorContainer}>{likeError}</div>}
           <span className={styles.track__timeText}>
             {formatTime(track.duration_in_seconds)}
           </span>

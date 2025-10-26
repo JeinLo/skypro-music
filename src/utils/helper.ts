@@ -10,20 +10,16 @@ export function getUniqueValuesByKey(
     const value = item[key];
 
     if (Array.isArray(value)) {
-      // Для genre (string[])
       value.forEach((v) => {
-        if (typeof v === 'string' && v) {
-          uniqueValues.add(v);
+        if (v) {
+          uniqueValues.add(String(v)); // ← Добавлено String() для string[]
         }
       });
-    } else if (typeof value === 'string' && value) {
-      // Для author, name, album, release_date
+    } else if (typeof value === 'string') {
       uniqueValues.add(value);
     } else if (typeof value === 'number') {
-      // Для _id, duration_in_seconds
-      uniqueValues.add(String(value));
+      uniqueValues.add(String(value)); // ← Добавлено для number (_id, duration_in_seconds)
     }
-    // Пропускаем null (logo) и starred_user (number[])
   });
 
   return Array.from(uniqueValues);
