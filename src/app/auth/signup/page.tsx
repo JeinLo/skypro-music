@@ -1,91 +1,76 @@
 'use client';
-import Link from 'next/link';
-import Image from 'next/image';
+
+import { createUser, getTokens } from '@/services/auth/authApi';
 import styles from './signup.module.css';
 import classNames from 'classnames';
-import { useState } from 'react';
-import { createUser, getTokens } from '@/services/auth/authApi';
-import { AxiosError } from 'axios';
+import Link from 'next/link';
+import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/store';
 import { setAuth } from '@/store/features/authSlice';
+import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
 
-export default function SignUpPage() {
-  const dispatch = useAppDispatch();
-  const router = useRouter();
-  const [dataField, setDataField] = useState({
-    email: '',
-    username: '',
-    password: '',
-    newpassword: '',
-  });
+export default function SignUp() {
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const onChangeDataField = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDataField({ ...dataField, [name]: value });
+  const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
-  const onSubmitUserData = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const onChangeUsername = (e: ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value);
+  };
+
+  const onChangePassword = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
+  const onChangeConfirmPassword = (e: ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+  };
+
+  const onSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (
-      !dataField.email.trim() ||
-      !dataField.username.trim() ||
-      !dataField.password.trim() ||
-      !dataField.newpassword.trim()
-    ) {
-      setErrorMessage('Заполните все поля');
-      return;
+    if (!email.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
+      return setErrorMessage('Заполните все поля');
     }
-
-    if (dataField.password !== dataField.newpassword) {
-      setErrorMessage('Пароли не совпадают. Повторите ввод');
-      return;
+    if (password !== confirmPassword) {
+      return setErrorMessage('Пароли не совпадают');
     }
-
-    const { newpassword, ...dataToSend } = dataField;
-
     setIsLoading(true);
+
     try {
-      const userResponse = await createUser(dataToSend);
-      const tokens = await getTokens(dataToSend);
+      console.log('Sending signup request with:', { email, username, password });
+      const userResponse: AuthUserReturn = await createUser({ email, password });
+      console.log('Signup response:', userResponse);
+      const tokens = await getTokens(email, password);
+      console.log('Tokens response:', tokens);
       dispatch(
         setAuth({
           access: tokens.access,
           refresh: tokens.refresh,
-          userId: userResponse.data.id,
-          username: userResponse.data.username,
+          userId: userResponse._id, // Исправлено с id на _id
+          username: userResponse.username,
         })
       );
-      localStorage.setItem('userId', userResponse.data.id.toString());
-      localStorage.setItem('username', userResponse.data.username);
+      localStorage.setItem('userId', userResponse._id.toString()); // Исправлено с id на _id
+      localStorage.setItem('username', userResponse.username);
       router.push('/music/main');
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response) {
-          const errorResponseData = error.response.data;
-          if (errorResponseData.errors) {
-            const errors = errorResponseData.errors;
-            if (errors.email) {
-              setErrorMessage(errors.email.join(' '));
-            } else if (errors.username) {
-              setErrorMessage(errors.username.join(' '));
-            } else if (errors.password) {
-              setErrorMessage(errors.password.join(' '));
-            } else {
-              setErrorMessage(errorResponseData.message || 'Ошибка регистрации');
-            }
-          } else {
-            setErrorMessage(errorResponseData.message || 'Ошибка регистрации');
-          }
-        } else if (error.request) {
-          setErrorMessage('Похоже, что-то с интернет-подключением... Попробуйте позже');
-        } else {
-          setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
-        }
+    } catch (error: unknown) {
+      console.error('Signup error:', error);
+      if (error instanceof Error) {
+        setErrorMessage(error.message || 'Ошибка регистрации');
+      } else {
+        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
       }
     } finally {
       setIsLoading(false);
@@ -96,58 +81,48 @@ export default function SignUpPage() {
     <>
       <Link href="/music/main">
         <div className={styles.modal__logo}>
-          <Image src="/img/logo_modal.png" alt="logo" width={140} height={21} />
+          <img src="/img/logo_modal.png" alt="logo" />
         </div>
       </Link>
       <input
         className={classNames(styles.modal__input, styles.login)}
         type="text"
         name="email"
-        value={dataField.email}
         placeholder="Почта"
-        autoComplete="email"
-        onChange={onChangeDataField}
-        disabled={isLoading}
+        value={email}
+        onChange={onChangeEmail}
       />
       <input
-        className={classNames(styles.modal__input, styles.login)}
+        className={styles.modal__input}
         type="text"
         name="username"
-        value={dataField.username}
         placeholder="Имя пользователя"
-        autoComplete="username"
-        onChange={onChangeDataField}
-        disabled={isLoading}
+        value={username}
+        onChange={onChangeUsername}
       />
       <input
         className={styles.modal__input}
         type="password"
         name="password"
-        value={dataField.password}
         placeholder="Пароль"
-        autoComplete="new-password"
-        onChange={onChangeDataField}
-        disabled={isLoading}
+        value={password}
+        onChange={onChangePassword}
       />
       <input
         className={styles.modal__input}
         type="password"
-        name="newpassword"
-        value={dataField.newpassword}
+        name="confirmPassword"
         placeholder="Повторите пароль"
-        autoComplete="new-password"
-        onChange={onChangeDataField}
-        disabled={isLoading}
+        value={confirmPassword}
+        onChange={onChangeConfirmPassword}
       />
       <div className={styles.errorContainer}>{errorMessage}</div>
       <button
-        className={classNames(styles.modal__btnSignupEnt, {
-          [styles.loading__btn]: isLoading,
-        })}
-        onClick={onSubmitUserData}
         disabled={isLoading}
+        onClick={onSubmit}
+        className={styles.modal__btnSignupEnt}
       >
-        {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+        Зарегистрироваться
       </button>
     </>
   );

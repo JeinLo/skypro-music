@@ -74,7 +74,7 @@ export default function Track({ track, playlist }: TrackProps) {
               toggleLike();
             }}
           >
-            <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'like-filled' : 'like'}`} />
+            <use xlinkHref={isLike ? '/img/icon/dislike.svg' : '/img/icon/sprite.svg#icon-like'} />
           </svg>
           {likeError && <div className={styles.errorContainer}>{likeError}</div>}
           <span className={styles.track__timeText}>

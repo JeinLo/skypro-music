@@ -181,7 +181,7 @@ export default function Bar() {
                   onClick={toggleLike}
                 >
                   <svg className={styles.trackPlay__likeSvg}>
-                    <use xlinkHref={`/img/icon/sprite.svg#icon-${isLike ? 'like-filled' : 'like'}`} />
+                    <use xlinkHref={isLike ? '/img/icon/dislike.svg' : '/img/icon/sprite.svg#icon-like'} />
                   </svg>
                 </div>
                 {likeError && <div className={styles.errorContainer}>{likeError}</div>}

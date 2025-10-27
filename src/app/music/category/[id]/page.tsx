@@ -6,10 +6,10 @@ import Bar from '@/components/Bar/Bar';
 import styles from '../../main/page.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
-import { getPlaylistTracks } from '@/services/tracks/tracksApi';
+import { getPlaylistTracks, getTracks } from '@/services/tracks/tracksApi';
 import { setCollectionTracks, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
 import { useParams } from 'next/navigation';
-import { AxiosError } from 'axios';
+import { TrackType } from '@/sharedTypes/sharedTypes';
 
 export default function CategoryPage() {
   const dispatch = useAppDispatch();
@@ -24,21 +24,18 @@ export default function CategoryPage() {
     const fetchSelectionTracks = async () => {
       setIsLoading(true);
       try {
-        const res = await getPlaylistTracks(params.id);
-        dispatch(setCollectionTracks(res)); // res уже TrackType[]
+        const trackIds = await getPlaylistTracks(params.id);
+        const allTracks = await getTracks();
+        const tracks = allTracks.filter((track) => trackIds.includes(track._id));
+        dispatch(setCollectionTracks(tracks));
         dispatch(setTitlePlaylist(`Подборка ${params.id}`));
-      } catch (error) {
-        if (error instanceof AxiosError) {
-          if (error.response) {
-            setErrorMessageLocal(error.response.data.message || 'Ошибка загрузки подборки');
-            dispatch(setErrorMessage(error.response.data.message || 'Ошибка загрузки подборки'));
-          } else if (error.request) {
-            setErrorMessageLocal('Похоже, что-то с интернет-соединением... Попробуйте позже');
-            dispatch(setErrorMessage('Похоже, что-то с интернет-соединением... Попробуйте позже'));
-          } else {
-            setErrorMessageLocal('Неизвестная ошибка. Попробуйте перезагрузить страницу');
-            dispatch(setErrorMessage('Неизвестная ошибка. Попробуйте перезагрузить страницу'));
-          }
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setErrorMessageLocal(error.message || 'Ошибка загрузки подборки');
+          dispatch(setErrorMessage(error.message || 'Ошибка загрузки подборки'));
+        } else {
+          setErrorMessageLocal('Неизвестная ошибка. Попробуйте перезагрузить страницу');
+          dispatch(setErrorMessage('Неизвестная ошибка. Попробуйте перезагрузить страницу'));
         }
       } finally {
         setIsLoading(false);

@@ -5,13 +5,13 @@ import styles from './signin.module.css';
 import classNames from 'classnames';
 import { useState } from 'react';
 import { loginUser, getTokens } from '@/services/auth/authApi';
-import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/store';
 import { setAuth } from '@/store/features/authSlice';
+import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
 
 export default function Signin() {
-  const [authField, setAuthField] = useState({ email: '', password: '' });
+  const [authField, setAuthField] = useState<AuthUserProps>({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -33,30 +33,26 @@ export default function Signin() {
     setIsLoading(true);
     try {
       console.log('Sending login request with:', authField);
-      const userResponse = await loginUser(authField);
-      console.log('Login response:', userResponse); 
-      const tokens = await getTokens(authField);
+      const userResponse: AuthUserReturn = await loginUser(authField);
+      console.log('Login response:', userResponse);
+      const tokens = await getTokens(authField.email, authField.password);
+      console.log('Tokens response:', tokens);
       dispatch(
         setAuth({
           access: tokens.access,
           refresh: tokens.refresh,
-          userId: userResponse.data.id,
-          username: userResponse.data.username,
+          userId: userResponse._id,
+          username: userResponse.username,
         })
       );
-      localStorage.setItem('userId', userResponse.data.id.toString());
-      localStorage.setItem('username', userResponse.data.username);
+      localStorage.setItem('userId', userResponse._id.toString());
       router.push('/music/main');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      if (error instanceof AxiosError) {
-        if (error.response) {
-          setErrorMessage(error.response.data.message || 'Ошибка авторизации');
-        } else if (error.request) {
-          setErrorMessage('Похоже, что-то с интернет-подключением... Попробуйте позже');
-        } else {
-          setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
-        }
+      if (error instanceof Error) {
+        setErrorMessage(error.message || 'Ошибка авторизации');
+      } else {
+        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
       }
     } finally {
       setIsLoading(false);

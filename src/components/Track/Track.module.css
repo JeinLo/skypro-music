@@ -140,11 +140,17 @@
 }
 
 .track__timeSvg {
-  width: 14px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   margin-right: 17px;
-  fill: transparent;
-  stroke: #696969;
+  fill: none;
+  stroke: #ffffff;
+  cursor: pointer;
+}
+
+.track__timeSvg.active {
+  stroke: white;
+  fill: none;
 }
 
 .track__timeText {
@@ -158,6 +164,8 @@
 
 .track__timeSvg.loading {
   animation: pulse 1s infinite;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @keyframes pulse {

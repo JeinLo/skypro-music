@@ -243,10 +243,21 @@
 }
 
 .trackPlay__likeSvg {
-  width: 14px;
-  height: 12px;
-  fill: transparent;
-  stroke: #696969;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #ffffff;
+  cursor: pointer;
+}
+
+.trackPlay__likeSvg.active {
+  stroke: white;
+  fill: none;
+}
+
+.trackPlay__likeSvg.loading {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .trackPlay__dislike {
