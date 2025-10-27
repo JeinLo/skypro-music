@@ -7,18 +7,19 @@ import styles from '../../main/page.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
 import { getPlaylistTracks, getTracks } from '@/services/tracks/tracksApi';
-import { setCollectionTracks, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
+import { setCollectionTracks, setTitlePlaylist, setErrorMessage, setPlaylist } from '@/store/features/trackSlice';
 import { useParams } from 'next/navigation';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 
 export default function CategoryPage() {
   const dispatch = useAppDispatch();
   const params = useParams<{ id: string }>();
-  const { collectionTracks, filters, searchTrack } = useAppSelector(
+  const { collectionTracks, filters, searchTrack, titlePlaylist } = useAppSelector(
     (state) => state.tracks
   );
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessageLocal] = useState('');
+  const [localTitle, setLocalTitle] = useState('Подборка');
 
   useEffect(() => {
     const fetchSelectionTracks = async () => {
@@ -28,7 +29,15 @@ export default function CategoryPage() {
         const allTracks = await getTracks();
         const tracks = allTracks.filter((track) => trackIds.includes(track._id));
         dispatch(setCollectionTracks(tracks));
-        dispatch(setTitlePlaylist(`Подборка ${params.id}`));
+        dispatch(setPlaylist(tracks));
+        const playlistTitles: { [key: string]: string } = {
+          '2': 'Плейлист дня',
+          '3': '100 танцевальных хитов',
+          '4': 'Инди-заряд',
+        };
+        const newTitle = playlistTitles[params.id] || 'Подборка';
+        setLocalTitle(newTitle);
+        dispatch(setTitlePlaylist(newTitle));
       } catch (error: unknown) {
         if (error instanceof Error) {
           setErrorMessageLocal(error.message || 'Ошибка загрузки подборки');
@@ -46,10 +55,11 @@ export default function CategoryPage() {
 
   const playlist = useMemo(() => {
     let result = collectionTracks;
-    if (filters.author.length) {
+    console.log('Filters:', filters);
+    if (filters && Array.isArray(filters.author) && filters.author.length > 0) {
       result = result.filter((track) => filters.author.includes(track.author));
     }
-    if (filters.genre.length) {
+    if (filters && Array.isArray(filters.genre) && filters.genre.length > 0) {
       result = result.filter((track) =>
         track.genre.some((genre) => filters.genre.includes(genre))
       );
@@ -61,7 +71,7 @@ export default function CategoryPage() {
           track.author.toLowerCase().includes(searchTrack.toLowerCase())
       );
     }
-    if (filters.sortByYear !== 'По умолчанию') {
+    if (filters && filters.sortByYear !== 'По умолчанию') {
       result = [...result].sort((a, b) => {
         const dateA = new Date(a.release_date).getTime();
         const dateB = new Date(b.release_date).getTime();
@@ -79,7 +89,7 @@ export default function CategoryPage() {
           <Centerblock
             isLoading={isLoading}
             tracks={playlist}
-            title={`Подборка ${params.id}`}
+            title={localTitle}
             errorMessage={errorMessage}
             pagePlaylist={collectionTracks}
           />

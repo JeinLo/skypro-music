@@ -20,7 +20,7 @@ export default function Centerblock({ tracks, isLoading, errorMessage, title, pa
   const isShuffle = tracksState?.isShuffle ?? false;
   const playlist = tracksState?.playlist ?? [];
   const shufflePlaylist = tracksState?.shufflePlaylist ?? [];
-  const displayPlaylist = isShuffle ? shufflePlaylist : (playlist.length > 0 ? playlist : tracks);
+  const displayPlaylist = isShuffle && shufflePlaylist.length > 0 ? shufflePlaylist : (playlist.length > 0 ? playlist : tracks);
 
   return (
     <div className={styles.centerblock}>
@@ -37,9 +37,15 @@ export default function Centerblock({ tracks, isLoading, errorMessage, title, pa
           <div className={styles.centerblock__content}>
             <Title />
             <div className={styles.content__playlist}>
-              {displayPlaylist.map((track) => (
-                <Track key={track._id} track={track} playlist={pagePlaylist} />
-              ))}
+              {displayPlaylist.length > 0 ? (
+                displayPlaylist.map((track) => (
+                  <Track key={track._id} track={track} playlist={pagePlaylist?.length > 0 ? pagePlaylist : tracks} />
+                ))
+              ) : (
+                <div style={{ color: '#fff', textAlign: 'center', padding: '20px' }}>
+                  Треки не найдены
+                </div>
+              )}
             </div>
           </div>
         </>
