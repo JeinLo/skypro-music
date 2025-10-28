@@ -1,29 +1,36 @@
-import { TrackType } from '@/sharedTypes/sharedTypes';
-import { BASE_URL } from '../constants';
+import axios from 'axios';
+import { PlaylistSelectionType, TrackType } from '@/sharedTypes/sharedTypes';
+import { BASE_URL } from '@/services/constants';
+import { getFavorites } from '@/services/tracks/favoriteApi';
 
-// Получение всех треков
-export const getTracks = async (): Promise<TrackType[]> => {
-  const res = await fetch(`${BASE_URL}/catalog/track/all/`, { cache: 'force-cache' });
-  if (!res.ok) {
-    throw new Error('Ошибка при получении треков');
+export const getFavoriteTracks = async (access: string): Promise<TrackType[]> => {
+  console.log('Get Favorite Tracks URL:', `${BASE_URL}/catalog/track/favorite/all/`);
+  try {
+    const res = await getFavorites(access);
+      console.log(res.data.data)
+    return res.data.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw new Error(error.response.data.message || 'Ошибка загрузки избранных треков');
+    }
+    throw new Error('Нет интернета');
   }
-  const json = await res.json();
-  return json.data;
 };
 
-// Получение подборки по ID
-export const getPlaylistTracks = async (id: string): Promise<TrackType[]> => {
-  const res = await fetch(`${BASE_URL}/catalog/selection/${id}/`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) {
-    throw new Error(`Ошибка при получении подборки ${id}`);
-  }
+export const getTracks = async (): Promise<TrackType[]> => {
+  console.log('Get Tracks URL:', `${BASE_URL}/catalog/track/all/`);
+  const res = await axios.get(`${BASE_URL}/catalog/track/all/`);
+  return res.data.data;
+};
 
-  const json = await res.json();
-  const trackIds: number[] = json.data.items; // ← массив ID
+// export const getPlaylistTracks = async (id: string): Promise<number[]> => {
+//   console.log('Get Playlist Tracks URL:', `${BASE_URL}/catalog/selection/${id}/`);
+//   const res = await axios.get(`${BASE_URL}/catalog/selection/${id}/`);
+//   return res.data.items;
+// };
 
-  // Получаем все треки и фильтруем по ID
-  const allTracks = await getTracks();
-  return allTracks.filter((track) => trackIds.includes(track._id));
+export const getAllSelections = async (): Promise<PlaylistSelectionType[]> => {
+  console.log('Get All Selections URL:', `${BASE_URL}/catalog/selection/all`);
+  const res = await axios.get(`${BASE_URL}/catalog/selection/all`);
+  return res.data.data;
 };

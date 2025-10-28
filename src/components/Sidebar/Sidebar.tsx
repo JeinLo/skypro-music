@@ -36,7 +36,7 @@ export default function Sidebar() {
       <div className={styles.sidebar__block}>
         <div className={styles.sidebar__list}>
           <div className={styles.sidebar__item}>
-            <Link className={styles.sidebar__link} href="/music/category/1">
+            <Link className={styles.sidebar__link} href="/music/category/2">
               <Image
                 className={styles.sidebar__img}
                 src="/img/playlist01.png"
@@ -47,22 +47,22 @@ export default function Sidebar() {
             </Link>
           </div>
           <div className={styles.sidebar__item}>
-            <Link className={styles.sidebar__link} href="/music/category/2">
+            <Link className={styles.sidebar__link} href="/music/category/3">
               <Image
                 className={styles.sidebar__img}
                 src="/img/playlist02.png"
-                alt="day's playlist"
+                alt="dance hits"
                 width={250}
                 height={170}
               />
             </Link>
           </div>
           <div className={styles.sidebar__item}>
-            <Link className={styles.sidebar__link} href="/music/category/3">
+            <Link className={styles.sidebar__link} href="/music/category/4">
               <Image
                 className={styles.sidebar__img}
                 src="/img/playlist03.png"
-                alt="day's playlist"
+                alt="indie charge"
                 width={250}
                 height={170}
               />

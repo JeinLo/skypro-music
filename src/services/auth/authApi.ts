@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { BASE_URL } from '../constants';
+import { BASE_URL } from '@/services/constants';
 
 export type AuthUserProps = {
   email: string;
@@ -12,22 +12,24 @@ export type AuthUserReturn = {
   _id: number;
 };
 
-type SignupResponse = {
-  message: string;
-  result: {
-    username: string;
-    email: string;
-    _id: number;
-  };
-  success: boolean;
+export type TokenReturn = {
+  access: string;
+  refresh: string;
 };
 
-export const authUser = async (data: AuthUserProps): Promise<AuthUserReturn> => {
+/**
+ * Регистрация через /user/signup/
+ */
+export const createUser = async (data: AuthUserProps): Promise<AuthUserReturn> => {
+  const payload = {
+    email: data.email,
+    password: data.password,
+    username: data.email, // username равен email
+  };
+  console.log('Signup URL:', `${BASE_URL}/user/signup/`, 'Data:', payload);
   try {
-    const res = await axios.post<AuthUserReturn>(`${BASE_URL}/user/login/`, data, {
-      headers: {
-        'content-type': 'application/json',
-      },
+    const res = await axios.post<AuthUserReturn>(`${BASE_URL}/user/signup/`, payload, {
+      headers: { 'content-type': 'application/json' },
     });
     const userData = res.data;
     localStorage.setItem('username', userData.username);
@@ -35,42 +37,78 @@ export const authUser = async (data: AuthUserProps): Promise<AuthUserReturn> => 
     return userData;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      const { status, data } = error.response;
-      if (status === 400 || status === 401) {
-        throw new Error(data.message || 'Ошибка авторизации');
-      }
-      throw new Error('Сервер недоступен, попробуйте позже');
+      throw new Error(error.response.data.message || 'Ошибка регистрации');
     }
-    throw new Error('Отсутствует интернет, попробуйте позже');
+    throw new Error('Нет интернета');
   }
 };
 
-export const signupUser = async (
-  data: AuthUserProps & { username: string },
-): Promise<AuthUserReturn> => {
+/**
+ * Логин через /user/login/ — сохраняет username и userId в localStorage
+ */
+export const loginUser = async (data: AuthUserProps): Promise<AuthUserReturn> => {
+  console.log('Login URL:', `${BASE_URL}/user/login/`, 'Data:', data);
   try {
-    const res = await axios.post<SignupResponse>(`${BASE_URL}/user/signup/`, data, {
-      headers: {
-        'content-type': 'application/json',
-      },
+    const res = await axios.post<AuthUserReturn>(`${BASE_URL}/user/login/`, data, {
+      headers: { 'content-type': 'application/json' },
     });
-    const { result } = res.data;
-    localStorage.setItem('username', result.username);
-    localStorage.setItem('userId', String(result._id));
-    return result;
+    const userData = res.data;
+    localStorage.setItem('username', userData.username);
+    localStorage.setItem('userId', String(userData._id));
+    return userData;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
-      const { status, data } = error.response;
-      if (status === 403) {
-        throw new Error(data.message || 'Введенный Email уже занят');
-      }
-      throw new Error('Сервер недоступен, попробуйте позже');
+      console.log('Login error response:', error.response.data);
+      throw new Error(error.response.data.message || 'Ошибка авторизации');
     }
-    throw new Error('Отсутствует интернет, попробуйте позже');
+    throw new Error('Нет интернета');
   }
 };
 
+/**
+ * Получение токенов через /user/token/
+ */
+export const getTokens = async (email: string, password: string): Promise<TokenReturn> => {
+  const data = { email, password };
+  console.log('Token URL:', `${BASE_URL}/user/token/`, 'Data:', data);
+  try {
+    const res = await axios.post<TokenReturn>(`${BASE_URL}/user/token/`, data, {
+      headers: { 'content-type': 'application/json' },
+    });
+    return res.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw new Error(error.response.data.message || 'Ошибка получения токенов');
+    }
+    throw new Error('Нет интернета');
+  }
+};
+
+/**
+ * Обновление токена через /user/token/refresh/
+ */
+export const refreshToken = async (refresh: string): Promise<{ access: string }> => {
+  console.log('Refresh Token URL:', `${BASE_URL}/user/token/refresh/`, 'Data:', { refresh });
+  try {
+    const res = await axios.post<{ access: string }>(`${BASE_URL}/user/token/refresh/`, { refresh }, {
+      headers: { 'content-type': 'application/json' },
+    });
+    return res.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response) {
+      throw new Error(error.response.data.message || 'Ошибка обновления токена');
+    }
+    throw new Error('Нет интернета');
+  }
+};
+
+/**
+ * Выход — очистка localStorage
+ */
 export const logoutUser = () => {
   localStorage.removeItem('username');
   localStorage.removeItem('userId');
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('favoriteTrackIds');
 };

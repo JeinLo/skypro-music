@@ -1,38 +1,82 @@
-import { Suspense } from 'react';
-import classNames from 'classnames';
-import styles from '../../../main/page.module.css';
-import Bar from '@/components/Bar/Bar';
-import Sidebar from '@/components/Sidebar/Sidebar';
+'use client';
 import Centerblock from '@/components/Centerblock/Centerblock';
-import Navigation from '@/components/Navigation/Navigation';
-import { getPlaylistTracks } from '@/services/tracks/tracksApi';
-import { TrackType } from '@/sharedTypes/sharedTypes';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { useEffect, useMemo, useState } from 'react';
+import { getTracks, getAllSelections } from '@/services/tracks/tracksApi';
+import { setCollectionTracks, setPlaylist, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
+import { useParams } from 'next/navigation';
+import { TrackType, PlaylistSelectionType } from '@/sharedTypes/sharedTypes';
 
-type CategoryPageProps = {
-  params: { id: string };
-};
+export default function CategoryPage() {
+  const dispatch = useAppDispatch();
+  const params = useParams<{ id: string }>();
+  const { collectionTracks, filters, searchTrack } = useAppSelector((state) => state.tracks);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessageLocal] = useState('');
+  const [selection, setSelection] = useState<PlaylistSelectionType | null>(null);
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  let tracks: TrackType[] = [];
-  try {
-    tracks = await getPlaylistTracks(params.id);
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : 'Неизвестная ошибка');
-  }
+  useEffect(() => {
+    const fetchSelection = async () => {
+      setIsLoading(true);
+      try {
+        const selections: PlaylistSelectionType[] = await getAllSelections();
+        const currentSelection = selections.find(s => s._id === Number(params.id));
+        if (!currentSelection) throw new Error('Подборка не найдена');
+
+        const allTracks: TrackType[] = await getTracks();
+        const selectionTracks = allTracks.filter(track => 
+          currentSelection.items.includes(track._id)
+        );
+
+        dispatch(setCollectionTracks(selectionTracks));
+        dispatch(setPlaylist(selectionTracks));
+        dispatch(setTitlePlaylist(currentSelection.name));
+        setSelection(currentSelection);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Ошибка загрузки подборки';
+        setErrorMessageLocal(message);
+        dispatch(setErrorMessage(message));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSelection();
+  }, [dispatch, params.id]);
+
+  const playlist = useMemo(() => {
+    let result = collectionTracks;
+    if (filters && Array.isArray(filters.author) && filters.author.length > 0) {
+      result = result.filter(track => filters.author.includes(track.author));
+    }
+    if (filters && Array.isArray(filters.genre) && filters.genre.length > 0) {
+      result = result.filter(track =>
+        track.genre.some(genre => filters.genre.includes(genre))
+      );
+    }
+    if (searchTrack) {
+      result = result.filter(track =>
+        track.name.toLowerCase().includes(searchTrack.toLowerCase()) ||
+        track.author.toLowerCase().includes(searchTrack.toLowerCase())
+      );
+    }
+    if (filters && filters.sortByYear && filters.sortByYear !== 'По умолчанию') {
+      result = [...result].sort((a, b) => {
+        const dateA = new Date(a.release_date).getTime();
+        const dateB = new Date(b.release_date).getTime();
+        return filters.sortByYear === 'Сначала новые' ? dateB - dateA : dateA - dateB;
+      });
+    }
+    return result;
+  }, [collectionTracks, filters, searchTrack]);
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <main className={styles.main}>
-          <Navigation />
-          <Suspense fallback={<p>Загрузка подборки...</p>}>
-            <Centerblock tracks={tracks} />
-          </Suspense>
-          <Sidebar />
-        </main>
-        <Bar />
-        <footer className="footer"></footer>
-      </div>
-    </div>
+    <Centerblock
+      isLoading={isLoading}
+      tracks={playlist}
+      title={selection?.name || 'Загрузка...'}
+      errorMessage={errorMessage}
+      pagePlaylist={collectionTracks}
+    />
   );
 }

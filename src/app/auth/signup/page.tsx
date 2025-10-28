@@ -1,11 +1,14 @@
 'use client';
 
-import { signupUser } from '@/services/auth/authApi';
+import { createUser, getTokens } from '@/services/auth/authApi';
 import styles from './signup.module.css';
 import classNames from 'classnames';
 import Link from 'next/link';
 import { ChangeEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/store';
+import { setAuth } from '@/store/features/authSlice';
+import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -15,6 +18,7 @@ export default function SignUp() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -32,7 +36,7 @@ export default function SignUp() {
     setConfirmPassword(e.target.value);
   };
 
-  const onSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -44,16 +48,33 @@ export default function SignUp() {
     }
     setIsLoading(true);
 
-    signupUser({ email, username, password })
-      .then(() => {
-        router.push('/music/main');
-      })
-      .catch((error) => {
-        setErrorMessage(error.message);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    try {
+      console.log('Sending signup request with:', { email, username, password });
+      const userResponse: AuthUserReturn = await createUser({ email, password });
+      console.log('Signup response:', userResponse);
+      const tokens = await getTokens(email, password);
+      console.log('Tokens response:', tokens);
+      dispatch(
+        setAuth({
+          access: tokens.access,
+          refresh: tokens.refresh,
+          userId: userResponse._id, // Исправлено с id на _id
+          username: userResponse.username,
+        })
+      );
+      localStorage.setItem('userId', userResponse._id.toString()); // Исправлено с id на _id
+      localStorage.setItem('username', userResponse.username);
+      router.push('/music/main');
+    } catch (error: unknown) {
+      console.error('Signup error:', error);
+      if (error instanceof Error) {
+        setErrorMessage(error.message || 'Ошибка регистрации');
+      } else {
+        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

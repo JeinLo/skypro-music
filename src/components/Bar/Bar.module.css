@@ -243,10 +243,21 @@
 }
 
 .trackPlay__likeSvg {
-  width: 14px;
-  height: 12px;
-  fill: transparent;
-  stroke: #696969;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: #ffffff;
+  cursor: pointer;
+}
+
+.trackPlay__likeSvg.active {
+  stroke: white;
+  fill: none;
+}
+
+.trackPlay__likeSvg.loading {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .trackPlay__dislike {
@@ -371,4 +382,19 @@
     color: #ad61ff;
     cursor: pointer;
   }
+}
+
+.errorContainer {
+  color: red;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.trackPlay__like.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

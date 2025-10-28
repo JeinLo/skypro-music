@@ -1,78 +1,100 @@
 'use client';
-
-import { authUser } from '@/services/auth/authApi';
+import Link from 'next/link';
+import Image from 'next/image';
 import styles from './signin.module.css';
 import classNames from 'classnames';
-import Link from 'next/link';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
+import { loginUser, getTokens } from '@/services/auth/authApi';
 import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/store';
+import { setAuth } from '@/store/features/authSlice';
+import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
 
 export default function Signin() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [authField, setAuthField] = useState<AuthUserProps>({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
-  const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
+  const onChangeUserData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAuthField({ ...authField, [name]: value });
   };
 
-  const onChangePassword = (e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
-
-  const onSubmit = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmitUserData = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!email.trim() || !password.trim()) {
+    if (!authField.email.trim() || !authField.password.trim()) {
       return setErrorMessage('Заполните все поля');
     }
-    setIsLoading(true);
 
-    authUser({ email, password })
-      .then(() => {
-        router.push('/music/main');
-      })
-      .catch((error) => {
-        setErrorMessage(error.message);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    setIsLoading(true);
+    try {
+      console.log('Sending login request with:', authField);
+      const userResponse: AuthUserReturn = await loginUser(authField);
+      console.log('Login response:', userResponse);
+      const tokens = await getTokens(authField.email, authField.password);
+      console.log('Tokens response:', tokens);
+      dispatch(
+        setAuth({
+          access: tokens.access,
+          refresh: tokens.refresh,
+          userId: userResponse._id,
+          username: userResponse.username,
+        })
+      );
+      localStorage.setItem('userId', userResponse._id.toString());
+      router.push('/music/main');
+    } catch (error: unknown) {
+      console.error('Login error:', error);
+      if (error instanceof Error) {
+        setErrorMessage(error.message || 'Ошибка авторизации');
+      } else {
+        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <>
       <Link href="/music/main">
         <div className={styles.modal__logo}>
-          <img src="/img/logo_modal.png" alt="logo" />
+          <Image src="/img/logo_modal.png" alt="logo" width={140} height={21} />
         </div>
       </Link>
       <input
         className={classNames(styles.modal__input, styles.login)}
         type="text"
-        name="login"
+        name="email"
         placeholder="Почта"
-        value={email}
-        onChange={onChangeEmail}
+        autoComplete="email"
+        value={authField.email}
+        onChange={onChangeUserData}
+        disabled={isLoading}
       />
       <input
-        className={classNames(styles.modal__input)}
+        className={styles.modal__input}
         type="password"
         name="password"
         placeholder="Пароль"
-        value={password}
-        onChange={onChangePassword}
+        autoComplete="current-password"
+        value={authField.password}
+        onChange={onChangeUserData}
+        disabled={isLoading}
       />
       <div className={styles.errorContainer}>{errorMessage}</div>
       <button
+        className={classNames(styles.modal__btnEnter, {
+          [styles.loading__btn]: isLoading,
+        })}
         disabled={isLoading}
-        onClick={onSubmit}
-        className={styles.modal__btnEnter}
+        onClick={onSubmitUserData}
       >
-        Войти
+        {isLoading ? 'Вход...' : 'Войти'}
       </button>
       <Link href="/auth/signup" className={styles.modal__btnSignup}>
         Зарегистрироваться
