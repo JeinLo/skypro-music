@@ -9,5 +9,13 @@ export interface TrackType {
   logo: null | string;
   track_file: string;
   starred_user: number[];
-  isLiked?: boolean; 
+  isLiked?: boolean;
+}
+
+export interface PlaylistSelectionType {
+  _id: number;
+  name: string;
+  items: number[];
+  owner: number[];
+  __v: number;
 }

@@ -21,7 +21,8 @@ export default function Home() {
       setIsLoading(true);
       try {
         const res = await getTracks();
-        dispatch(setAllTracks(res)); // res уже TrackType[]
+        dispatch(setAllTracks(res));
+        console.log(res)
         dispatch(setTitlePlaylist('Треки'));
       } catch (error) {
         if (error instanceof AxiosError) {
