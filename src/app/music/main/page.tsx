@@ -1,20 +1,13 @@
 'use client';
 import Centerblock from '@/components/Centerblock/Centerblock';
-import Navigation from '@/components/Navigation/Navigation';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Bar from '@/components/Bar/Bar';
-import styles from './page.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
 import { getTracks } from '@/services/tracks/tracksApi';
-import { setAllTracks, setTitlePlaylist, setErrorMessage, setCollectionTracks } from '@/store/features/trackSlice';
+import { setAllTracks, setPlaylist, setTitlePlaylist, setErrorMessage, setCollectionTracks } from '@/store/features/trackSlice';
 import { AxiosError } from 'axios';
-import { usePathname } from 'next/navigation';
 
 export default function Home() {
   const dispatch = useAppDispatch();
-  const patchName = usePathname();
-  console.log(patchName)
   const { allTracks, filters, searchTrack } = useAppSelector((state) => state.tracks);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessageLocal] = useState('');
@@ -25,6 +18,7 @@ export default function Home() {
       try {
         const res = await getTracks();
         dispatch(setAllTracks(res));
+        dispatch(setPlaylist(res));
         dispatch(setCollectionTracks([]));
         dispatch(setTitlePlaylist('Треки'));
       } catch (error) {
@@ -44,11 +38,9 @@ export default function Home() {
         setIsLoading(false);
       }
     };
+
     fetchTracks();
-    if (patchName === "music/main") {
-      fetchTracks()
-    }
-  }, [dispatch, patchName]);
+  }, [dispatch]); // Убрали pathname
 
   const playlist = useMemo(() => {
     let result = allTracks;
@@ -78,21 +70,12 @@ export default function Home() {
   }, [allTracks, filters, searchTrack]);
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <main className={styles.main}>
-          <Navigation />
-          <Centerblock
-            isLoading={isLoading}
-            tracks={playlist}
-            title="Треки"
-            errorMessage={errorMessage}
-            pagePlaylist={allTracks}
-          />
-          <Sidebar />
-        </main>
-        <Bar />
-      </div>
-    </div>
+    <Centerblock
+      isLoading={isLoading}
+      tracks={playlist}
+      title="Треки"
+      errorMessage={errorMessage}
+      pagePlaylist={allTracks}
+    />
   );
 }

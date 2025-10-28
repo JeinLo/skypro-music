@@ -1,13 +1,9 @@
 'use client';
 import Centerblock from '@/components/Centerblock/Centerblock';
-import Navigation from '@/components/Navigation/Navigation';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Bar from '@/components/Bar/Bar';
-import styles from '../../main/page.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
 import { getTracks, getAllSelections } from '@/services/tracks/tracksApi';
-import { setCollectionTracks, setTitlePlaylist, setErrorMessage, setPlaylist } from '@/store/features/trackSlice';
+import { setCollectionTracks, setPlaylist, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
 import { useParams } from 'next/navigation';
 import { TrackType, PlaylistSelectionType } from '@/sharedTypes/sharedTypes';
 
@@ -23,25 +19,19 @@ export default function CategoryPage() {
     const fetchSelection = async () => {
       setIsLoading(true);
       try {
-        // Загружаем все подборки
         const selections: PlaylistSelectionType[] = await getAllSelections();
         const currentSelection = selections.find(s => s._id === Number(params.id));
-        if (!currentSelection) {
-          throw new Error('Подборка не найдена');
-        }
+        if (!currentSelection) throw new Error('Подборка не найдена');
 
-        // Загружаем все треки
         const allTracks: TrackType[] = await getTracks();
         const selectionTracks = allTracks.filter(track => 
           currentSelection.items.includes(track._id)
         );
 
-        // Обновляем состояние
         dispatch(setCollectionTracks(selectionTracks));
         dispatch(setPlaylist(selectionTracks));
         dispatch(setTitlePlaylist(currentSelection.name));
         setSelection(currentSelection);
-
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Ошибка загрузки подборки';
         setErrorMessageLocal(message);
@@ -56,8 +46,6 @@ export default function CategoryPage() {
 
   const playlist = useMemo(() => {
     let result = collectionTracks;
-
-    // Безопасные проверки
     if (filters && Array.isArray(filters.author) && filters.author.length > 0) {
       result = result.filter(track => filters.author.includes(track.author));
     }
@@ -83,21 +71,12 @@ export default function CategoryPage() {
   }, [collectionTracks, filters, searchTrack]);
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
-        <main className={styles.main}>
-          <Navigation />
-          <Centerblock
-            isLoading={isLoading}
-            tracks={playlist}
-            title={selection?.name || 'Загрузка...'}
-            errorMessage={errorMessage}
-            pagePlaylist={collectionTracks}
-          />
-          <Sidebar />
-        </main>
-        <Bar />
-      </div>
-    </div>
+    <Centerblock
+      isLoading={isLoading}
+      tracks={playlist}
+      title={selection?.name || 'Загрузка...'}
+      errorMessage={errorMessage}
+      pagePlaylist={collectionTracks}
+    />
   );
 }
