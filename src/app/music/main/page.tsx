@@ -7,11 +7,14 @@ import styles from './page.module.css';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { useEffect, useMemo, useState } from 'react';
 import { getTracks } from '@/services/tracks/tracksApi';
-import { setAllTracks, setTitlePlaylist, setErrorMessage } from '@/store/features/trackSlice';
+import { setAllTracks, setTitlePlaylist, setErrorMessage, setCollectionTracks } from '@/store/features/trackSlice';
 import { AxiosError } from 'axios';
+import { usePathname } from 'next/navigation';
 
 export default function Home() {
   const dispatch = useAppDispatch();
+  const patchName = usePathname();
+  console.log(patchName)
   const { allTracks, filters, searchTrack } = useAppSelector((state) => state.tracks);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessageLocal] = useState('');
@@ -22,7 +25,7 @@ export default function Home() {
       try {
         const res = await getTracks();
         dispatch(setAllTracks(res));
-        console.log(res)
+        dispatch(setCollectionTracks([]));
         dispatch(setTitlePlaylist('Треки'));
       } catch (error) {
         if (error instanceof AxiosError) {
@@ -42,7 +45,10 @@ export default function Home() {
       }
     };
     fetchTracks();
-  }, [dispatch]);
+    if (patchName === "music/main") {
+      fetchTracks()
+    }
+  }, [dispatch, patchName]);
 
   const playlist = useMemo(() => {
     let result = allTracks;
