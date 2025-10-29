@@ -1,17 +1,19 @@
 'use client';
-import { useState, useCallback } from 'react';
+
+import { useState, useEffect } from 'react';
 import styles from './Search.module.css';
 import { useAppDispatch } from '@/store/store';
 import { setSearchTrack } from '@/store/features/trackSlice';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function Search() {
-  const [searchInput, setSearchInput] = useState('');
   const dispatch = useAppDispatch();
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  const onSearchInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-    dispatch(setSearchTrack(e.target.value));
-  }, [dispatch]);
+  useEffect(() => {
+    dispatch(setSearchTrack(debouncedSearch));
+  }, [debouncedSearch, dispatch]);
 
   return (
     <div className={styles.centerblock__search}>
@@ -24,7 +26,7 @@ export default function Search() {
         placeholder="Поиск"
         name="search"
         value={searchInput}
-        onChange={onSearchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
       />
     </div>
   );

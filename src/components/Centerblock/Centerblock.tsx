@@ -1,11 +1,12 @@
 'use client';
-import styles from './Centerblock.module.css';
+
+import { useFilteredTracks } from '@/hooks/useFilteredTracks';
 import Search from '../Search/Search';
 import Filter from '../Filter/Filter';
 import Title from '../Title/Title';
 import Track from '../Track/Track';
 import { TrackType } from '@/sharedTypes/sharedTypes';
-import { useAppSelector } from '@/store/store';
+import styles from './Centerblock.module.css';
 
 type CenterblockProps = {
   tracks: TrackType[];
@@ -15,12 +16,14 @@ type CenterblockProps = {
   pagePlaylist?: TrackType[];
 };
 
-export default function Centerblock({ tracks, isLoading, errorMessage, title, pagePlaylist = tracks }: CenterblockProps) {
-  const tracksState = useAppSelector((state) => state.tracks);
-  const isShuffle = tracksState?.isShuffle ?? false;
-  const playlist = tracksState?.playlist ?? [];
-  const shufflePlaylist = tracksState?.shufflePlaylist ?? [];
-  const displayPlaylist = isShuffle && shufflePlaylist.length > 0 ? shufflePlaylist : (playlist.length > 0 ? playlist : tracks);
+export default function Centerblock({
+  tracks: sourceTracks,
+  isLoading,
+  errorMessage,
+  title,
+  pagePlaylist = sourceTracks,
+}: CenterblockProps) {
+  const filteredTracks = useFilteredTracks(sourceTracks);
 
   return (
     <div className={styles.centerblock}>
@@ -37,9 +40,9 @@ export default function Centerblock({ tracks, isLoading, errorMessage, title, pa
           <div className={styles.centerblock__content}>
             <Title />
             <div className={styles.content__playlist}>
-              {displayPlaylist.length > 0 ? (
-                displayPlaylist.map((track) => (
-                  <Track key={track._id} track={track} playlist={pagePlaylist?.length > 0 ? pagePlaylist : tracks} />
+              {filteredTracks.length > 0 ? (
+                filteredTracks.map((track) => (
+                  <Track key={track._id} track={track} playlist={pagePlaylist} />
                 ))
               ) : (
                 <div style={{ color: '#fff', textAlign: 'center', padding: '20px' }}>
