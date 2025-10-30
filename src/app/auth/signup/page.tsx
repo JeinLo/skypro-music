@@ -9,69 +9,50 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/store';
 import { setAuth } from '@/store/features/authSlice';
 import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
+import { toast } from 'react-toastify';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
-  const onChangeEmail = (e: ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
+  const onChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: ChangeEvent<HTMLInputElement>) => setter(e.target.value);
 
-  const onChangeUsername = (e: ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
-  };
-
-  const onChangePassword = (e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  };
-
-  const onChangeConfirmPassword = (e: ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(e.target.value);
-  };
-
-  const onSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const onSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setErrorMessage('');
 
     if (!email.trim() || !username.trim() || !password.trim() || !confirmPassword.trim()) {
-      return setErrorMessage('Заполните все поля');
+      return toast.error('Заполните все поля');
     }
     if (password !== confirmPassword) {
-      return setErrorMessage('Пароли не совпадают');
+      return toast.error('Пароли не совпадают');
     }
-    setIsLoading(true);
 
+    setIsLoading(true);
     try {
-      console.log('Sending signup request with:', { email, username, password });
       const userResponse: AuthUserReturn = await createUser({ email, password });
-      console.log('Signup response:', userResponse);
       const tokens = await getTokens(email, password);
-      console.log('Tokens response:', tokens);
+
       dispatch(
         setAuth({
           access: tokens.access,
           refresh: tokens.refresh,
-          userId: userResponse._id, // Исправлено с id на _id
+          userId: userResponse._id,
           username: userResponse.username,
         })
       );
-      localStorage.setItem('userId', userResponse._id.toString()); // Исправлено с id на _id
+      localStorage.setItem('userId', userResponse._id.toString());
       localStorage.setItem('username', userResponse.username);
+      toast.success('Регистрация успешна!');
       router.push('/music/main');
     } catch (error: unknown) {
-      console.error('Signup error:', error);
-      if (error instanceof Error) {
-        setErrorMessage(error.message || 'Ошибка регистрации');
-      } else {
-        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
-      }
+      const message = error instanceof Error ? error.message : 'Ошибка регистрации';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -87,42 +68,41 @@ export default function SignUp() {
       <input
         className={classNames(styles.modal__input, styles.login)}
         type="text"
-        name="email"
         placeholder="Почта"
         value={email}
-        onChange={onChangeEmail}
+        onChange={onChange(setEmail)}
+        disabled={isLoading}
       />
       <input
         className={styles.modal__input}
         type="text"
-        name="username"
         placeholder="Имя пользователя"
         value={username}
-        onChange={onChangeUsername}
+        onChange={onChange(setUsername)}
+        disabled={isLoading}
       />
       <input
         className={styles.modal__input}
         type="password"
-        name="password"
         placeholder="Пароль"
         value={password}
-        onChange={onChangePassword}
+        onChange={onChange(setPassword)}
+        disabled={isLoading}
       />
       <input
         className={styles.modal__input}
         type="password"
-        name="confirmPassword"
         placeholder="Повторите пароль"
         value={confirmPassword}
-        onChange={onChangeConfirmPassword}
+        onChange={onChange(setConfirmPassword)}
+        disabled={isLoading}
       />
-      <div className={styles.errorContainer}>{errorMessage}</div>
       <button
         disabled={isLoading}
         onClick={onSubmit}
         className={styles.modal__btnSignupEnt}
       >
-        Зарегистрироваться
+        {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
       </button>
     </>
   );

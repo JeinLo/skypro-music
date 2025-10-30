@@ -7,6 +7,8 @@ import Title from '../Title/Title';
 import Track from '../Track/Track';
 import { TrackType } from '@/sharedTypes/sharedTypes';
 import styles from './Centerblock.module.css';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 type CenterblockProps = {
   tracks: TrackType[];
@@ -29,10 +31,18 @@ export default function Centerblock({
     <div className={styles.centerblock}>
       <Search />
       <h2 className={styles.centerblock__h2}>{title || 'Треки'}</h2>
-      {errorMessage && <div className={styles.error__message}>{errorMessage}</div>}
+
+      {errorMessage && (
+        <div className={styles.error__message}>{errorMessage}</div>
+      )}
+
       {isLoading ? (
-        <div style={{ color: '#fff', textAlign: 'center', padding: '50px' }}>
-          Загрузка...
+        <div className={styles.skeleton}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className={styles.skeleton__item}>
+              <Skeleton height={36} width="100%" />
+            </div>
+          ))}
         </div>
       ) : (
         <>
@@ -45,9 +55,7 @@ export default function Centerblock({
                   <Track key={track._id} track={track} playlist={pagePlaylist} />
                 ))
               ) : (
-                <div style={{ color: '#fff', textAlign: 'center', padding: '20px' }}>
-                  Треки не найдены
-                </div>
+                <div className={styles.empty}>Треки не найдены</div>
               )}
             </div>
           </div>

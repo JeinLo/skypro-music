@@ -36,6 +36,10 @@
   padding: 6px 20px;
   color: white;
   cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .filter__button:not(:last-child) {
@@ -80,4 +84,22 @@
 
 .filter__list::-webkit-scrollbar-thumb {
   background-color: white;
+}
+
+.selectedBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #9a48f1;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #b672ff;
+  z-index: 1;
 }

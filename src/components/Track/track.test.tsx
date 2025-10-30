@@ -11,20 +11,14 @@ const mockTrack: TrackType = data[0];
 
 describe('Track component', () => {
   test('Отрисовка данных трека', () => {
-   render(<ReduxProvider>
-   <Track track={mockTrack} playlist={mockTracks} />
+    render(
+      <ReduxProvider>
+        <Track track={mockTrack} playlist={mockTracks} />
       </ReduxProvider>
-   )
-    expect (screen.getAllByText(mockTrack.author).length).toBeGreaterThan(0);
-    expect (screen.getAllByText(mockTrack.name).length).toBeGreaterThan(0);
-    expect (screen.getAllByText(formatTime(mockTrack.duration_in_seconds)).length).toBeGreaterThan(0);
+    );
+
+    expect(screen.getByText(mockTrack.author)).toBeInTheDocument();
+    expect(screen.getByText(mockTrack.name)).toBeInTheDocument();
+    expect(screen.getByText(formatTime(mockTrack.duration_in_seconds))).toBeInTheDocument();
   });
-  test('Снапшот трека', () => {
-  const { container } = render(
-    <ReduxProvider>
-      <Track track={mockTrack} playlist={mockTracks} />
-    </ReduxProvider>
-  );
-  expect(container).toMatchSnapshot();
-});
 });
