@@ -86,3 +86,14 @@
   margin-bottom: 45px;
   padding: 20px 40px 20px 111px;
 }
+
+.skeleton__item {
+  margin-bottom: 16px;
+}
+
+.empty {
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+}

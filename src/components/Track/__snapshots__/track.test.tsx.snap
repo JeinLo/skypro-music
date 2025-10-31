@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Track component Снапшот трека 1`] = `
+<div>
+  <div
+    class="playlist__item"
+  >
+    <div
+      class="playlist__track"
+    >
+      <div
+        class="track__title"
+      >
+        <div
+          class="track__titleImage"
+        >
+          <svg
+            class="track__titleSvg"
+          >
+            <use
+              xlink:href="/img/icon/sprite.svg#icon-note"
+            />
+          </svg>
+        </div>
+        <div
+          class="track__titleText"
+        >
+          <a
+            class="track__titleLink"
+            href=""
+          >
+            Chase
+             
+            <span
+              class="track__titleSpan"
+            />
+          </a>
+        </div>
+      </div>
+      <div
+        class="track__author"
+      >
+        <a
+          class="track__authorLink"
+          href=""
+        >
+          Alexander Nakarada
+        </a>
+      </div>
+      <div
+        class="track__album"
+      >
+        <a
+          class="track__albumLink"
+          href=""
+        >
+          Chase
+        </a>
+      </div>
+      <div
+        class="track__time"
+      >
+        <svg
+          class="track__timeSvg"
+        >
+          <use
+            xlink:href="/img/icon/sprite.svg#icon-like"
+          />
+        </svg>
+        <span
+          class="track__timeText"
+        >
+          3:25
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+`;

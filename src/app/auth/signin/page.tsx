@@ -9,10 +9,10 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/store/store';
 import { setAuth } from '@/store/features/authSlice';
 import { AuthUserProps, AuthUserReturn } from '@/services/auth/authApi';
+import { toast } from 'react-toastify';
 
 export default function Signin() {
   const [authField, setAuthField] = useState<AuthUserProps>({ email: '', password: '' });
-  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -24,19 +24,16 @@ export default function Signin() {
 
   const onSubmitUserData = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setErrorMessage('');
 
     if (!authField.email.trim() || !authField.password.trim()) {
-      return setErrorMessage('Заполните все поля');
+      return toast.error('Заполните все поля');
     }
 
     setIsLoading(true);
     try {
-      console.log('Sending login request with:', authField);
       const userResponse: AuthUserReturn = await loginUser(authField);
-      console.log('Login response:', userResponse);
       const tokens = await getTokens(authField.email, authField.password);
-      console.log('Tokens response:', tokens);
+      
       dispatch(
         setAuth({
           access: tokens.access,
@@ -46,14 +43,11 @@ export default function Signin() {
         })
       );
       localStorage.setItem('userId', userResponse._id.toString());
+      toast.success('Успешный вход!');
       router.push('/music/main');
     } catch (error: unknown) {
-      console.error('Login error:', error);
-      if (error instanceof Error) {
-        setErrorMessage(error.message || 'Ошибка авторизации');
-      } else {
-        setErrorMessage('Возникла неизвестная ошибка, попробуйте позже');
-      }
+      const message = error instanceof Error ? error.message : 'Ошибка авторизации';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +80,6 @@ export default function Signin() {
         onChange={onChangeUserData}
         disabled={isLoading}
       />
-      <div className={styles.errorContainer}>{errorMessage}</div>
       <button
         className={classNames(styles.modal__btnEnter, {
           [styles.loading__btn]: isLoading,

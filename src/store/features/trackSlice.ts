@@ -162,25 +162,22 @@ export const trackSlice = createSlice({
     setErrorMessage: (state, action: PayloadAction<string>) => {
       state.errorMessage = action.payload;
     },
+
     setFilters: (
       state,
-      action: PayloadAction<{ filterType: 'author' | 'genre' | 'year'; value: string }>
+      action: PayloadAction<{ author: string[]; genre: string[]; sortByYear: string }>
     ) => {
-      const { filterType, value } = action.payload;
-      if (filterType === 'year') {
-        state.filters.sortByYear = value;
-      } else {
-        const currentFilters = state.filters[filterType];
-        if (currentFilters.includes(value)) {
-          state.filters[filterType] = currentFilters.filter((item) => item !== value);
-        } else {
-          state.filters[filterType].push(value);
-        }
-      }
+      state.filters = {
+        author: action.payload.author,
+        genre: action.payload.genre,
+        sortByYear: action.payload.sortByYear,
+      };
     },
+
     setSearchTrack: (state, action: PayloadAction<string>) => {
       state.searchTrack = action.payload;
     },
+
     resetFilters: (state) => {
       state.filters = { author: [], genre: [], sortByYear: 'По умолчанию' };
       state.searchTrack = '';
