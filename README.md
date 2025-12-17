@@ -18,49 +18,11 @@ Skypro-music — музыкальный сервис для прослушива
 * реализация анимаций и эффектов для улучшения пользовательского опыта.
 
 ## Используемые технологии и библиотеки:
-Next.js;
-Redux;
-TypeScript;
-Prettier;
-ESLint;
-axios;
-react-toastify;
-Jest;
-
-
-## Дополнительные функции
-- **React-Toastify**: Уведомления для успешных действий (создание, редактирование, удаление) и ошибок.
-- **Фильтрация задач**: По категории и статусу.
-- **Поиск задач**: Поиск по заголовку задачи.
-- **Сортировка задач**: По дате или заголовку.
-- **Анимация загрузки**: Используется `react-spinners` для отображения загрузки задач.
-
-## Установка и запуск
-1. Склонируйте репозиторий: `git clone <repository-url>`
-2. Установите зависимости: `npm install`
-3. Запустите приложение: `npm start`
-4. Для форматирования кода: `npm run format`
-
-## Используемые технологии
-- React, React Router, Styled-Components
-- Axios для API-запросов
-- React-Toastify для уведомлений
-- React-Spinners для анимации загрузки
-- @hello-pangea/dnd для drag-and-drop
-
-## API
-Приложение взаимодействует с API `https://wedev-api.sky.pro/api/`. Все запросы обрабатывают ошибки сети и авторизации.
-
-## Структура проекта
-- `src/components`: Компоненты UI (Header, Card, Column, TaskModal, Calendar и др.)
-- `src/pages`: Страницы приложения (MainPage, LoginPage, RegisterPage, CardPage, NotFoundPage)
-- `src/services`: API-запросы (auth.js, api.js)
-- `src/contexts`: Контексты для управления авторизацией и задачами
-- `src/styles`: Глобальные стили и стилизованные компоненты
-
-## Дополнительные фичи
-- Toast уведомления (react-toastify) для успеха/ошибок.
-- Валидация полей (trim, пустые поля, email).
-- Сообщение "Новых задач нет" if empty.
-- Обработка сетевых ошибок (toast).
-- Тема через string "dark"/"light", стили адаптированы.
+* Next.js;
+* Redux;
+* TypeScript;
+* Prettier;
+* ESLint;
+* axios;
+* react-toastify;
+* Jest.
